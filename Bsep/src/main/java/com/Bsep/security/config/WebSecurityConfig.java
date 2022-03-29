@@ -1,4 +1,4 @@
-package com.Bsep.config;
+package com.Bsep.security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import com.Bsep.security.auth.RestAuthenticationEntryPoint;
 import com.Bsep.security.auth.TokenAuthenticationFilter;
 import com.Bsep.service.impl.CustomUserDetailsService;
-import com.Bsep.util.TokenUtils;
+import com.Bsep.security.util.TokenUtils;
 
 @Configuration
 // Ukljucivanje podrske za anotacije "@Pre*" i "@Post*" koje ce aktivirati autorizacione provere za svaki pristup metodi

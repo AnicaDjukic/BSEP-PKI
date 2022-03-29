@@ -1,4 +1,4 @@
-package com.Bsep.util;
+package com.Bsep.security.util;
 
 import java.util.Date;
 
