@@ -10,15 +10,13 @@
       <form>
         <input
           type="text"
-          id="login"
           class="fadeIn second"
           name="login"
           placeholder="login"
           v-model="username"
         />
         <input
-          type="text"
-          id="password"
+          type="password"
           class="fadeIn third"
           name="login"
           placeholder="password"
@@ -54,17 +52,10 @@ export default {
         password: this.password
       }
       axios
-        .post('http://localhost:8080/api/v1/auth/login', user, {
-          headers: {
-            'Access-Control-Allow-Origin': 'http://localhost:8080/'
-          }
-        })
+        .post('http://localhost:8080/api/v1/auth/login', user)
         .then((response) => {
           window.sessionStorage.setItem('jwt', response.data.jwt)
           this.$router.push('/admin-page')
-        })
-        .catch((err) => {
-          alert(err.response.data)
         })
     }
   }
