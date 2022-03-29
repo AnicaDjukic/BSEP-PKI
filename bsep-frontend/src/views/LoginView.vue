@@ -25,7 +25,7 @@
           v-model="password"
         />
         <input
-          type="submit"
+          type="button"
           class="fadeIn fourth"
           value="Log In"
           v-on:click="login()"
@@ -36,33 +36,38 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios'
 
 export default {
-  name: "LoginView",
+  name: 'LoginView',
   data: function () {
     return {
-      username: "",
-      password: "",
-    };
+      username: '',
+      password: ''
+    }
   },
   mounted: function () {},
   methods: {
     login: function () {
+      const user = {
+        username: this.username,
+        password: this.password
+      }
       axios
-        .post("http://localhost:8080/api/v1/auth/login", {
-          username: this.username,
-          password: this.password,
+        .post('http://localhost:8080/api/v1/auth/login', user, {
+          headers: {
+            'Access-Control-Allow-Origin': 'http://localhost:8080/'
+          }
         })
         .then((response) => {
-          window.sessionStorage.setItem("jwt", response.data.jwt);
-          this.$router.push("/admin-page");
+          window.sessionStorage.setItem('jwt', response.data.jwt)
+          this.$router.push('/admin-page')
         })
         .catch((err) => {
-          alert(err.response.data);
-        });
-    },
-  },
-};
+          alert(err.response.data)
+        })
+    }
+  }
+}
 </script>
 <style scoped src="@/css/Login.css"></style>
