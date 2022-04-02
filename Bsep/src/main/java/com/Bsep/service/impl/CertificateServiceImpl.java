@@ -3,9 +3,14 @@ package com.Bsep.service.impl;
 import com.Bsep.certificate.CertificateGenerator;
 import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.model.CertificateData;
+import com.Bsep.model.CertificatePurposeType;
+import com.Bsep.model.CertificateStatus;
+import com.Bsep.model.CertificateType;
 import com.Bsep.model.IssuerData;
 import com.Bsep.model.SubjectData;
 import com.Bsep.model.User;
+import com.Bsep.repository.CertificateDataRepository;
+import com.Bsep.repository.KeyStoreRepository;
 import com.Bsep.service.CerificateService;
 import com.Bsep.service.UserService;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -23,24 +28,41 @@ import java.util.UUID;
 public class CertificateServiceImpl implements CerificateService {
 
     private final UserService userService;
+    
+    private final CertificateDataRepository certificateDataRepository;
+    
+    private final KeyStoreRepository keyStoreRepository;
+    
+    
 
-    public CertificateServiceImpl(UserService userService) {
-        this.userService = userService;
-    }
+	public CertificateServiceImpl(UserService userService, CertificateDataRepository certificateDataRepository,
+			KeyStoreRepository keyStoreRepository) {
+		this.userService = userService;
+		this.certificateDataRepository = certificateDataRepository;
+		this.keyStoreRepository = keyStoreRepository;
+	}
 
-    @Override
+	@Override
     public CertificateData createCertificate(NewCertificateDto newCertificateDto) {
 
         SubjectData subjectData = generateSubjectData(newCertificateDto);
 
         KeyPair keyPairIssuer = generateKeyPair();
-        IssuerData issuerData = generateIssuerData(keyPairIssuer.getPrivate());
-
+        //IssuerData issuerData = generateIssuerData(keyPairIssuer.getPrivate());
+        if (newCertificateDto.getCertificateType().equals(CertificateType.ROOT)) {
+        	IssuerData issuerData = new IssuerData(keyPairIssuer.getPrivate(),subjectData.getX500name());
+        	X509Certificate x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
+        	keyStoreRepository.saveCertificate(keyPairIssuer.getPrivate(), x509certificate, newCertificateDto.getCertificateType());
+        	CertificateData certificateData = new CertificateData(x509certificate.getSerialNumber().toString(),subjectData.getX500name().getRDNs(BCStyle.CN).toString(), CertificateStatus.VALID, newCertificateDto.getCertificateType(), CertificatePurposeType.SERVICE);
+        	return certificateDataRepository.save(certificateData);
+		}
+        
+        
         //Generise se sertifikat za subjekta, potpisan od strane issuer-a
-        CertificateGenerator cg = new CertificateGenerator();
-        X509Certificate cert = cg.generateCertificate(subjectData, issuerData);
+        //CertificateGenerator cg = new CertificateGenerator();
+        //X509Certificate cert = cg.generateCertificate(subjectData, issuerData);
 
-        return new CertificateData();
+        return null;
     }
 
     private SubjectData generateSubjectData(NewCertificateDto newCertificateDto) {
@@ -76,12 +98,14 @@ public class CertificateServiceImpl implements CerificateService {
     }
 
 
-    private IssuerData generateIssuerData(PrivateKey issuerKey) {
+    private IssuerData generateIssuerData(PrivateKey issuerKey, NewCertificateDto newCertificateDto) {
+    /*	CertificateData certificateData = certificateDataRepository.findBySerialNumber(newCertificateDto.getIssuerCertificateId());
+    	User issuer = userService.findByUsername(certificateData.getSubjectUsername());
         X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-        builder.addRDN(BCStyle.CN, "Nikola Luburic");
-        builder.addRDN(BCStyle.SURNAME, "Luburic");
-        builder.addRDN(BCStyle.GIVENNAME, "Nikola");
-        builder.addRDN(BCStyle.O, "UNS-FTN");
+        builder.addRDN(BCStyle.CN, issuer.getUsername());
+        builder.addRDN(BCStyle.SURNAME, issuer.getLastName());
+        builder.addRDN(BCStyle.GIVENNAME, issuer.getFirstName());
+        builder.addRDN(BCStyle.O, certificateData.);
         builder.addRDN(BCStyle.OU, "Katedra za informatiku");
         builder.addRDN(BCStyle.C, "RS");
         builder.addRDN(BCStyle.E, "nikola.luburic@uns.ac.rs");
@@ -91,7 +115,8 @@ public class CertificateServiceImpl implements CerificateService {
         //Kreiraju se podaci za issuer-a, sto u ovom slucaju ukljucuje:
         // - privatni kljuc koji ce se koristiti da potpise sertifikat koji se izdaje
         // - podatke o vlasniku sertifikata koji izdaje nov sertifikat
-        return new IssuerData(issuerKey, builder.build());
+        return new IssuerData(issuerKey, builder.build());*/
+    	return null;
     }
 
 

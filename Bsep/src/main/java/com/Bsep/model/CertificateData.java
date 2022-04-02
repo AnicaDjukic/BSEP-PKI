@@ -1,7 +1,17 @@
 package com.Bsep.model;
 
-import javax.persistence.*;
+import java.security.cert.X509Certificate;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+
+@Entity
 public class CertificateData {
 
     @Id
@@ -13,8 +23,8 @@ public class CertificateData {
     @Column(name = "serialNumber", unique = true, nullable = false)
     private String serialNumber;
 
-    @Column(name = "subjectEmail", unique = false, nullable = false)
-    private String subjectEmail;
+    @Column(name = "subjectUsername", unique = false, nullable = false)
+    private String subjectUsername;
 
     @Enumerated(EnumType.ORDINAL)
     private CertificateStatus certificateStatus;
@@ -29,14 +39,14 @@ public class CertificateData {
     public CertificateData() {
     }
 
-    public CertificateData(Long id, String serialNumber, String subjectEmail, CertificateStatus certificateStatus, CertificateType certificateType, CertificatePurposeType certificatePurposeType) {
-        this.id = id;
+    public CertificateData(String serialNumber, String subjectEmail, CertificateStatus certificateStatus, CertificateType certificateType, CertificatePurposeType certificatePurposeType) {
         this.serialNumber = serialNumber;
-        this.subjectEmail = subjectEmail;
+        this.subjectUsername = subjectEmail;
         this.certificateStatus = certificateStatus;
         this.certificateType = certificateType;
         this.certificatePurposeType = certificatePurposeType;
     }
+   
 
     public Long getId() {
         return id;
@@ -54,15 +64,16 @@ public class CertificateData {
         this.serialNumber = serialNumber;
     }
 
-    public String getSubjectEmail() {
-        return subjectEmail;
-    }
 
-    public void setSubjectEmail(String subjectEmail) {
-        this.subjectEmail = subjectEmail;
-    }
+    public String getSubjectUsername() {
+		return subjectUsername;
+	}
 
-    public CertificateStatus getCertificateStatus() {
+	public void setSubjectUsername(String subjectUsername) {
+		this.subjectUsername = subjectUsername;
+	}
+
+	public CertificateStatus getCertificateStatus() {
         return certificateStatus;
     }
 
