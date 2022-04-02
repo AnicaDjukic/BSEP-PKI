@@ -4,7 +4,6 @@ import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.model.CertificateData;
 import com.Bsep.service.impl.CertificateServiceImpl;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,10 +18,10 @@ public class CertificateController {
     public CertificateController(CertificateServiceImpl certificateService) {
         this.certificateService = certificateService;
     }
-    
+
 
     @PostMapping(value = "/create")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")	
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")	
     public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) {
         CertificateData newCertificate = certificateService.createCertificate(newCertificateDto);
         return ResponseEntity.ok(newCertificate);
