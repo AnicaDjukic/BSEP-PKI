@@ -59,10 +59,6 @@ public class CertificateServiceImpl implements CerificateService {
             IssuerData issuerData = new IssuerData(keyPairIssuer.getPrivate(), subjectData.getX500name());
             cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
             x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
-        }else if(newCertificateDto.getCertificateType().equals(CertificateType.INTERMEDIATE)){
-            IssuerData issuerData = generateIssuerData(newCertificateDto);
-            cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
-            x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
         }else{
             IssuerData issuerData = generateIssuerData(newCertificateDto);
             cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
