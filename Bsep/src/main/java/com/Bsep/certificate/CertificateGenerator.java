@@ -3,9 +3,7 @@ package com.Bsep.certificate;
 import com.Bsep.model.CertificateType;
 import com.Bsep.model.IssuerData;
 import com.Bsep.model.SubjectData;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -72,9 +70,25 @@ public class CertificateGenerator {
     private void addExtensions(CertificateType type, X509v3CertificateBuilder certGen) {
         if (type == CertificateType.ROOT) {
             try {
-                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature));
-                //certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.keyCertSign));
+                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign));
                 certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
+            } catch (CertIOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }else if(type == CertificateType.INTERMEDIATE){
+            try {
+                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign));
+                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
+            } catch (CertIOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }else{
+            try {
+                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.dataEncipherment));
+                //certGen.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
+                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
             } catch (CertIOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

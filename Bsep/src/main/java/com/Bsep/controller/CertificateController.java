@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateEncodingException;
+
 @RestController
 @RequestMapping(value = "/api/v1/certificate")
 public class CertificateController {
@@ -22,7 +27,7 @@ public class CertificateController {
 
     @PostMapping(value = "/create")
     //@PreAuthorize("hasRole('ROLE_ADMIN')")	
-    public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) {
+    public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException {
         CertificateData newCertificate = certificateService.createCertificate(newCertificateDto);
         return ResponseEntity.ok(newCertificate);
     }

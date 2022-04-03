@@ -14,17 +14,16 @@ import com.Bsep.repository.KeyStoreRepository;
 import com.Bsep.service.CerificateService;
 import com.Bsep.service.UserService;
 import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.stereotype.Service;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -49,31 +48,37 @@ public class CertificateServiceImpl implements CerificateService {
     }
 
     @Override
-    public CertificateData createCertificate(NewCertificateDto newCertificateDto) {
+    public CertificateData createCertificate(NewCertificateDto newCertificateDto) throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException {
 
         SubjectData subjectData = generateSubjectData(newCertificateDto);
-
+        X509Certificate x509certificate = null;
         KeyPair keyPairIssuer = generateKeyPair();
+        RDN cn = null;
         //IssuerData issuerData = generateIssuerData(keyPairIssuer.getPrivate());
         if (newCertificateDto.getCertificateType().equals(CertificateType.ROOT)) {
             IssuerData issuerData = new IssuerData(keyPairIssuer.getPrivate(), subjectData.getX500name());
-            RDN cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
-            X509Certificate x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
-            keyStoreRepository.saveCertificate(keyPairIssuer.getPrivate(), x509certificate, newCertificateDto.getCertificateType());
-            CertificateData certificateData = new CertificateData(x509certificate.getSerialNumber().toString(),
-                    IETFUtils.valueToString(cn.getFirst().getValue()),
-                    CertificateStatus.VALID,
-                    newCertificateDto.getCertificateType(),
-                    CertificatePurposeType.SERVICE);
-            return certificateDataRepository.save(certificateData);
+            cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
+            x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
+        }else if(newCertificateDto.getCertificateType().equals(CertificateType.INTERMEDIATE)){
+            IssuerData issuerData = generateIssuerData(newCertificateDto);
+            cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
+            x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
+        }else{
+            IssuerData issuerData = generateIssuerData(newCertificateDto);
+            cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
+            x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
         }
-
+        keyStoreRepository.saveCertificate(keyPairIssuer.getPrivate(), x509certificate, newCertificateDto.getCertificateType());
+        CertificateData certificateData = new CertificateData(x509certificate.getSerialNumber().toString(),
+                IETFUtils.valueToString(cn.getFirst().getValue()),
+                CertificateStatus.VALID,
+                newCertificateDto.getCertificateType(),
+                CertificatePurposeType.SERVICE);
+        return certificateDataRepository.save(certificateData);
 
         //Generise se sertifikat za subjekta, potpisan od strane issuer-a
         //CertificateGenerator cg = new CertificateGenerator();
         //X509Certificate cert = cg.generateCertificate(subjectData, issuerData);
-
-        return null;
     }
 
     private SubjectData generateSubjectData(NewCertificateDto newCertificateDto) {
@@ -109,25 +114,15 @@ public class CertificateServiceImpl implements CerificateService {
     }
 
 
-    private IssuerData generateIssuerData(PrivateKey issuerKey, NewCertificateDto newCertificateDto) {
-    /*	CertificateData certificateData = certificateDataRepository.findBySerialNumber(newCertificateDto.getIssuerCertificateId());
-    	User issuer = userService.findByUsername(certificateData.getSubjectUsername());
-        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-        builder.addRDN(BCStyle.CN, issuer.getUsername());
-        builder.addRDN(BCStyle.SURNAME, issuer.getLastName());
-        builder.addRDN(BCStyle.GIVENNAME, issuer.getFirstName());
-        builder.addRDN(BCStyle.O, certificateData.);
-        builder.addRDN(BCStyle.OU, "Katedra za informatiku");
-        builder.addRDN(BCStyle.C, "RS");
-        builder.addRDN(BCStyle.E, "nikola.luburic@uns.ac.rs");
-        //UID (USER ID) je ID korisnika
-        builder.addRDN(BCStyle.UID, "654321");
-
+    private IssuerData generateIssuerData(NewCertificateDto newCertificateDto) throws CertificateEncodingException, UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
+    	CertificateData certificateData = certificateDataRepository.findById(newCertificateDto.getIssuerCertificateId()).get();
+        Certificate issuerCertificate = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber());
+        X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) issuerCertificate).getSubject();
+        PrivateKey issuerKey = keyStoreRepository.getPrivateKeyForKeyStore(((X509Certificate) issuerCertificate).getSerialNumber().toString(), certificateData.getCertificateType());
         //Kreiraju se podaci za issuer-a, sto u ovom slucaju ukljucuje:
         // - privatni kljuc koji ce se koristiti da potpise sertifikat koji se izdaje
         // - podatke o vlasniku sertifikata koji izdaje nov sertifikat
-        return new IssuerData(issuerKey, builder.build());*/
-        return null;
+        return new IssuerData(issuerKey, issuerName);
     }
 
 

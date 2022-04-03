@@ -1,17 +1,16 @@
 package com.Bsep.repository;
 
+import com.Bsep.keystore.KeyStoreReader;
 import com.Bsep.keystore.KeyStoreWriter;
 import com.Bsep.model.CertificateType;
+import com.Bsep.model.IssuerData;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Repository;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Security;
+import java.security.*;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -28,6 +27,8 @@ public class KeyStoreRepository {
     private final String PASSWORD = "password";
 
     private KeyStoreWriter keyStoreWriter = new KeyStoreWriter();
+    private KeyStoreReader keyStoreReader = new KeyStoreReader();
+
 
     public KeyStoreRepository() {
         Security.addProvider(new BouncyCastleProvider());
@@ -68,8 +69,34 @@ public class KeyStoreRepository {
         if (type == CertificateType.ROOT) {
             keyStoreWriter.write(certificate.getSerialNumber().toString(), privateKey, PASSWORD.toCharArray(), certificate, keyStoreRoot);
             keyStoreWriter.saveKeyStore(KS_ROOT_PATH, PASSWORD.toCharArray(), keyStoreRoot);
+        }else if(type == CertificateType.INTERMEDIATE){
+            keyStoreWriter.write(certificate.getSerialNumber().toString(), privateKey, PASSWORD.toCharArray(), certificate, keyStoreIntermediate);
+            keyStoreWriter.saveKeyStore(KS_INTERMEDIATE_PATH, PASSWORD.toCharArray(), keyStoreIntermediate);
+        }else{
+            keyStoreWriter.write(certificate.getSerialNumber().toString(), privateKey, PASSWORD.toCharArray(), certificate, keyStoreEndEntity);
+            keyStoreWriter.saveKeyStore(KS_END_ENTITY_PATH, PASSWORD.toCharArray(), keyStoreEndEntity);
         }
     }
 
+    public PrivateKey getPrivateKeyForKeyStore(String issuerAlias, CertificateType certificateType)
+            throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+
+        if(certificateType.equals(CertificateType.ROOT)){
+            return (PrivateKey) keyStoreRoot.getKey(issuerAlias, PASSWORD.toCharArray());
+        }else{
+            return (PrivateKey) keyStoreIntermediate.getKey(issuerAlias, PASSWORD.toCharArray());
+        }
+
+    }
+
+    public Certificate readCertificate(CertificateType certificateType, String alias) {
+        String keyStoreFile = "";
+        if(certificateType.equals(CertificateType.ROOT)){
+            keyStoreFile = KS_ROOT_PATH;
+        }else{
+            keyStoreFile = KS_INTERMEDIATE_PATH;
+        }
+        return keyStoreReader.readCertificate(keyStoreFile, PASSWORD, alias);
+    }
 
 }
