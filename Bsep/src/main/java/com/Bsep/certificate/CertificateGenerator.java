@@ -87,7 +87,6 @@ public class CertificateGenerator {
         }else{
             try {
                 certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.dataEncipherment));
-                //certGen.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(KeyPurposeId.id_kp_clientAuth));
                 certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
             } catch (CertIOException e) {
                 // TODO Auto-generated catch block
