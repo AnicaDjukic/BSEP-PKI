@@ -27,7 +27,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -53,28 +55,40 @@ public class CertificateServiceImpl implements CerificateService {
         SubjectData subjectData = generateSubjectData(newCertificateDto);
         X509Certificate x509certificate = null;
         KeyPair keyPairIssuer = generateKeyPair();
-        RDN cn = null;
-        //IssuerData issuerData = generateIssuerData(keyPairIssuer.getPrivate());
+        IssuerData issuerData;
+        String issuerSerialNumber;
+
         if (newCertificateDto.getCertificateType().equals(CertificateType.ROOT)) {
-            IssuerData issuerData = new IssuerData(keyPairIssuer.getPrivate(), subjectData.getX500name());
-            cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
-            x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
+            issuerSerialNumber = subjectData.getSerialNumber();
+            issuerData = new IssuerData(keyPairIssuer.getPrivate(), subjectData.getX500name());
         }else{
-            IssuerData issuerData = generateIssuerData(newCertificateDto);
-            cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
-            x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
+            issuerSerialNumber = certificateDataRepository.findById(newCertificateDto.getIssuerCertificateId()).get().getSerialNumber();
+            issuerData = generateIssuerData(newCertificateDto);
         }
+        RDN cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
+        RDN org = subjectData.getX500name().getRDNs(BCStyle.O)[0];
+        RDN orgUnit = subjectData.getX500name().getRDNs(BCStyle.OU)[0];
+        RDN cCode = subjectData.getX500name().getRDNs(BCStyle.C)[0];
+
+        x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
         keyStoreRepository.saveCertificate(keyPairIssuer.getPrivate(), x509certificate, newCertificateDto.getCertificateType());
         CertificateData certificateData = new CertificateData(x509certificate.getSerialNumber().toString(),
                 IETFUtils.valueToString(cn.getFirst().getValue()),
+                IETFUtils.valueToString(org.getFirst().getValue()),
+                IETFUtils.valueToString(orgUnit.getFirst().getValue()),
+                IETFUtils.valueToString(cCode.getFirst().getValue()),
+                issuerSerialNumber,
                 CertificateStatus.VALID,
                 newCertificateDto.getCertificateType(),
                 CertificatePurposeType.SERVICE);
         return certificateDataRepository.save(certificateData);
+    }
 
-        //Generise se sertifikat za subjekta, potpisan od strane issuer-a
-        //CertificateGenerator cg = new CertificateGenerator();
-        //X509Certificate cert = cg.generateCertificate(subjectData, issuerData);
+    @Override
+    public List<CertificateData> getAll(Boolean isCa) {
+        List<CertificateData> certificates = certificateDataRepository.findAll();
+        return null;
+
     }
 
     private SubjectData generateSubjectData(NewCertificateDto newCertificateDto) {
