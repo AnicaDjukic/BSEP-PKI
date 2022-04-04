@@ -31,4 +31,5 @@ public class CertificateController {
         CertificateData newCertificate = certificateService.createCertificate(newCertificateDto);
         return ResponseEntity.ok(newCertificate);
     }
+
 }

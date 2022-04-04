@@ -70,14 +70,6 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    public String getusername() {
-        return username;
-    }
-
-    public void setusername(String username) {
-        this.username = username;
-    }
-
     public String getPassword() {
         return password;
     }

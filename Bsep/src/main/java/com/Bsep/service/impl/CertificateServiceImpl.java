@@ -69,12 +69,18 @@ public class CertificateServiceImpl implements CerificateService {
                 IETFUtils.valueToString(cn.getFirst().getValue()),
                 CertificateStatus.VALID,
                 newCertificateDto.getCertificateType(),
-                CertificatePurposeType.SERVICE);
+                getCertificatePurposeBasedOnType(newCertificateDto.getCertificateType()));
         return certificateDataRepository.save(certificateData);
 
         //Generise se sertifikat za subjekta, potpisan od strane issuer-a
         //CertificateGenerator cg = new CertificateGenerator();
         //X509Certificate cert = cg.generateCertificate(subjectData, issuerData);
+    }
+
+    private CertificatePurposeType getCertificatePurposeBasedOnType(CertificateType certificateType) {
+        if(certificateType.equals(CertificateType.ROOT)) return CertificatePurposeType.SERVICE;
+        if(certificateType.equals(CertificateType.INTERMEDIATE)) return CertificatePurposeType.SUBSYSTEM;
+        return CertificatePurposeType.USER;
     }
 
     private SubjectData generateSubjectData(NewCertificateDto newCertificateDto) {
