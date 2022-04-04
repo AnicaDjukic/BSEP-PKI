@@ -81,6 +81,26 @@
           class="fadeIn third"
           id="datePicker"
         ></Datepicker>
+        <div style="text-align:left;margin-left:4em">
+        Key usages:
+        </div>
+        <select
+          class="browser-default custom-select"
+          style="width: 20em"
+          v-model="keyUsages"
+          multiple
+        >
+          <option selected hidden>Certificate type</option>
+          <option value="128">digitalSignature</option>
+          <option value="64">nonRepudiation</option>
+          <option value="32">keyEncipherment</option>
+          <option value="16">dataEncipherment</option>
+          <option value="8">keyAgreement</option>
+          <option value="4">keyCertSign</option>
+          <option value="2">cRLSign</option>
+          <option value="1">encipherOnly</option>
+          <option value="32768">decipherOnly</option>
+        </select>
         <input
           style="margin-top: 1em"
           type="button"
@@ -111,7 +131,8 @@ export default {
       organizationEmail: '',
       countryCode: '',
       allSubjects: [],
-      date: null
+      date: null,
+      keyUsages: []
     }
   },
   mounted: function () {
@@ -142,7 +163,8 @@ export default {
         countryCode: this.countryCode,
         issuerCertificateId: Number(this.issuer),
         endDate: this.formatDate(this.date),
-        certificateType: this.certificateType
+        certificateType: this.certificateType,
+        keyUsages: this.keyUsages
       }
       axios
         .post('http://localhost:8080/api/v1/certificate/create', newCertificate)

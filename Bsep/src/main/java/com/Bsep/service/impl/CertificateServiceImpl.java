@@ -77,7 +77,7 @@ public class CertificateServiceImpl implements CerificateService {
         RDN orgUnit = subjectData.getX500name().getRDNs(BCStyle.OU)[0];
         RDN cCode = subjectData.getX500name().getRDNs(BCStyle.C)[0];
 
-        x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto.getCertificateType());
+        x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto);
         keyStoreRepository.saveCertificate(keyPairIssuer.getPrivate(), x509certificate, newCertificateDto.getCertificateType());
         CertificateData certificateData = new CertificateData(subjectData.getSerialNumber(),
                 IETFUtils.valueToString(cn.getFirst().getValue()),

@@ -1,8 +1,11 @@
 package com.Bsep.certificate;
 
+import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.model.CertificateType;
 import com.Bsep.model.IssuerData;
 import com.Bsep.model.SubjectData;
+
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -22,7 +25,7 @@ public class CertificateGenerator {
     public CertificateGenerator() {
     }
 
-    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, CertificateType type) {
+    public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, NewCertificateDto newCertificateDto) {
         try {
             //Posto klasa za generisanje sertifiakta ne moze da primi direktno privatni kljuc pravi se builder za objekat
             //Ovaj objekat sadrzi privatni kljuc izdavaoca sertifikata i koristiti se za potpisivanje sertifikata
@@ -43,7 +46,7 @@ public class CertificateGenerator {
                     subjectData.getPublicKey());
             //Generise se sertifikat
 
-            addExtensions(type, certGen);
+            addExtensions(newCertificateDto, certGen);
             X509CertificateHolder certHolder = certGen.build(contentSigner);
 
             //Builder generise sertifikat kao objekat klase X509CertificateHolder
@@ -67,31 +70,34 @@ public class CertificateGenerator {
         return null;
     }
 
-    private void addExtensions(CertificateType type, X509v3CertificateBuilder certGen) {
-        if (type == CertificateType.ROOT) {
-            try {
-                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign));
-                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
-            } catch (CertIOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }else if(type == CertificateType.INTERMEDIATE){
-            try {
-                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign));
-                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
-            } catch (CertIOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+    private void addExtensions(NewCertificateDto newCertificateDto, X509v3CertificateBuilder certGen) {
+        if (newCertificateDto.getCertificateType() == CertificateType.END_ENTITY) {
+        	try {
+				certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+			} catch (CertIOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }else{
             try {
-                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.dataEncipherment));
-                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
             } catch (CertIOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
+        int usage=0;
+        for (String s : newCertificateDto.getKeyUsages()) {
+        	 int sInt = Integer.parseInt(s);
+        	 usage |= sInt;
+        }
+      
+		try {
+			certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage));
+		} catch (CertIOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+        
     }
 }
