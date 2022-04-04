@@ -17,6 +17,8 @@ import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStoreException;
@@ -30,11 +32,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class CertificateServiceImpl implements CerificateService {
@@ -46,6 +44,10 @@ public class CertificateServiceImpl implements CerificateService {
     private final KeyStoreRepository keyStoreRepository;
 
     private final CertificateMapper certificateMapper;
+
+    private final String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
+    private final String END_CERT = "-----END CERTIFICATE-----";
+    private final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 
     public CertificateServiceImpl(UserService userService, CertificateDataRepository certificateDataRepository, KeyStoreRepository keyStoreRepository, CertificateMapper certificateMapper) {
@@ -101,6 +103,31 @@ public class CertificateServiceImpl implements CerificateService {
             certificateDtos.add(certificateMapper.toDTO(certificate, issuerCertificate.getSubjectUsername()));
         }
         return certificateDtos;
+    }
+
+    @Override
+    public void createCertificateFile(Long id) throws Exception {
+        Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
+        CertificateData certificateData = certificateDataRepository.findById(id).get();
+        if (isCertificateValid(certificateData)) {
+            throw new Exception();
+        }
+        byte[] bytes = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber()).getEncoded();
+
+        String certificate = BEGIN_CERT + LINE_SEPARATOR + new String(encoder.encode(bytes)) + LINE_SEPARATOR
+                + END_CERT;
+
+        writeBytesToFile(certificateData.getSerialNumber() + ".cer", certificate.getBytes());
+    }
+
+    private void writeBytesToFile(String fileOutput, byte[] bytes) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(fileOutput)) {
+            fos.write(bytes);
+        }
+    }
+
+    private boolean isCertificateValid(CertificateData certificate) {
+        return certificate.getCertificateStatus() != CertificateStatus.VALID;
     }
 
     private CertificatePurposeType getCertificatePurposeBasedOnType(CertificateType certificateType) {

@@ -16,4 +16,6 @@ public interface CerificateService {
     CertificateData createCertificate(NewCertificateDto newCertificateDto) throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, ParseException;
 
     List<CertificateDto> getAll(Boolean isCa);
+
+    void createCertificateFile(Long id) throws Exception;
 }

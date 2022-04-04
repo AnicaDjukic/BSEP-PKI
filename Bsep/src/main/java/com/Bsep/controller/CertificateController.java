@@ -4,14 +4,11 @@ import com.Bsep.dto.CertificateDto;
 import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.model.CertificateData;
 import com.Bsep.service.impl.CertificateServiceImpl;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -37,9 +34,20 @@ public class CertificateController {
         return ResponseEntity.ok(newCertificate);
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<CertificateDto>> getAllCertificates(@RequestParam(required = false) Boolean isCa) {
         List<CertificateDto> certificates = certificateService.getAll(isCa);
         return ResponseEntity.ok(certificates);
+    }
+
+    @GetMapping(value = "/{id}/file")
+    public ResponseEntity<Boolean> createCertificateFile(@PathVariable Long id) {
+        try {
+            certificateService.createCertificateFile(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }
