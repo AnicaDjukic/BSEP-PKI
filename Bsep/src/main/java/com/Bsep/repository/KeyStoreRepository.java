@@ -94,10 +94,12 @@ public class KeyStoreRepository {
 
     public Certificate readCertificate(CertificateType certificateType, String alias) {
         String keyStoreFile = "";
-        if (certificateType.equals(CertificateType.ROOT)) {
+        if (certificateType == CertificateType.ROOT) {
             keyStoreFile = KS_ROOT_PATH;
-        } else {
+        } else if (certificateType == CertificateType.INTERMEDIATE) {
             keyStoreFile = KS_INTERMEDIATE_PATH;
+        } else {
+            keyStoreFile = KS_END_ENTITY_PATH;
         }
         return keyStoreReader.readCertificate(keyStoreFile, PASSWORD, alias);
     }
