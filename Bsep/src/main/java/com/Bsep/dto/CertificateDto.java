@@ -1,6 +1,6 @@
 package com.Bsep.dto;
 
-import com.Bsep.model.CertificatePurposeType;
+import com.Bsep.model.CertificateStatus;
 import com.Bsep.model.CertificateType;
 
 public class CertificateDto {
@@ -12,13 +12,13 @@ public class CertificateDto {
     private String countryCode;
     private String issuerCommonName;
     private String endDate;
-    private boolean valid;
+    private CertificateStatus status;
     private CertificateType certificateType;
 
     public CertificateDto() {
     }
 
-    public CertificateDto(String serialNumber, String username, String organization, String organizationalUnitName, String countryCode, String issuerCommonName, String endDate, boolean valid, CertificateType certificateType) {
+    public CertificateDto(String serialNumber, String username, String organization, String organizationalUnitName, String countryCode, String issuerCommonName, String endDate, CertificateStatus status, CertificateType certificateType) {
         this.serialNumber = serialNumber;
         this.username = username;
         this.organization = organization;
@@ -26,7 +26,7 @@ public class CertificateDto {
         this.countryCode = countryCode;
         this.issuerCommonName = issuerCommonName;
         this.endDate = endDate;
-        this.valid = valid;
+        this.status = status;
         this.certificateType = certificateType;
     }
 
@@ -58,8 +58,8 @@ public class CertificateDto {
         return endDate;
     }
 
-    public boolean isValid() {
-        return valid;
+    public CertificateStatus getStatus() {
+        return status;
     }
 
     public CertificateType getCertificateType() {

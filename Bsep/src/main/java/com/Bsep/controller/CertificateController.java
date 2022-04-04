@@ -5,12 +5,18 @@ import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.model.CertificateData;
 import com.Bsep.service.impl.CertificateServiceImpl;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
+import java.text.ParseException;
 import java.util.List;
 
 @RestController
@@ -26,14 +32,14 @@ public class CertificateController {
 
     @PostMapping(value = "/create")
     //@PreAuthorize("hasRole('ROLE_ADMIN')")	
-    public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException {
+    public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, ParseException {
         CertificateData newCertificate = certificateService.createCertificate(newCertificateDto);
         return ResponseEntity.ok(newCertificate);
     }
 
-    @GetMapping(value = "/")
-    public ResponseEntity<List<CertificateDto>> getAllCertificates(@RequestParam Boolean isCa) {
-        List<CertificateData> certificates = certificateService.getAll(isCa);
-        return null;
+    @GetMapping()
+    public ResponseEntity<List<CertificateDto>> getAllCertificates(@RequestParam(required = false) Boolean isCa) {
+        List<CertificateDto> certificates = certificateService.getAll(isCa);
+        return ResponseEntity.ok(certificates);
     }
 }

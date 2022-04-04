@@ -1,7 +1,5 @@
 package com.Bsep.model;
 
-import java.security.cert.X509Certificate;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -10,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import java.util.Date;
 
 @Entity
 public class CertificateData {
@@ -26,17 +25,20 @@ public class CertificateData {
     @Column(name = "subjectUsername", unique = false, nullable = false)
     private String subjectUsername;
 
-    @Column(name="organization", unique = false, nullable = true)
+    @Column(name = "organization", unique = false, nullable = true)
     private String organization;
 
-    @Column(name="organizationalUnitName", unique = false, nullable = true)
+    @Column(name = "organizationalUnitName", unique = false, nullable = true)
     private String organizationalUnitName;
 
-    @Column(name="countryCode", unique = false, nullable = true)
+    @Column(name = "countryCode", unique = false, nullable = true)
     private String countryCode;
 
     @Column(name = "issuerSerialNumber", unique = false, nullable = false)
     private String issuerSerialNumber;
+
+    @Column(name = "endDate", nullable = false)
+    private Date endDate;
 
     @Enumerated(EnumType.ORDINAL)
     private CertificateStatus certificateStatus;
@@ -51,13 +53,14 @@ public class CertificateData {
     public CertificateData() {
     }
 
-    public CertificateData(String serialNumber, String subjectUsername, String organization, String organizationalUnitName, String countryCode, String issuerSerialNumber, CertificateStatus certificateStatus, CertificateType certificateType, CertificatePurposeType certificatePurposeType) {
+    public CertificateData(String serialNumber, String subjectUsername, String organization, String organizationalUnitName, String countryCode, String issuerSerialNumber, Date endDate, CertificateStatus certificateStatus, CertificateType certificateType, CertificatePurposeType certificatePurposeType) {
         this.serialNumber = serialNumber;
         this.subjectUsername = subjectUsername;
         this.organization = organization;
         this.organizationalUnitName = organizationalUnitName;
         this.countryCode = countryCode;
         this.issuerSerialNumber = issuerSerialNumber;
+        this.endDate = endDate;
         this.certificateStatus = certificateStatus;
         this.certificateType = certificateType;
         this.certificatePurposeType = certificatePurposeType;
@@ -65,10 +68,6 @@ public class CertificateData {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getSerialNumber() {
@@ -81,12 +80,12 @@ public class CertificateData {
 
 
     public String getSubjectUsername() {
-		return subjectUsername;
-	}
+        return subjectUsername;
+    }
 
-	public void setSubjectUsername(String subjectUsername) {
-		this.subjectUsername = subjectUsername;
-	}
+    public void setSubjectUsername(String subjectUsername) {
+        this.subjectUsername = subjectUsername;
+    }
 
     public String getOrganization() {
         return organization;
@@ -142,5 +141,9 @@ public class CertificateData {
 
     public void setCertificatePurposeType(CertificatePurposeType certificatePurposeType) {
         this.certificatePurposeType = certificatePurposeType;
+    }
+
+    public Date getEndDate() {
+        return endDate;
     }
 }
