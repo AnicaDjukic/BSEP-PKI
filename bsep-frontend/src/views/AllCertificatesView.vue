@@ -3,16 +3,62 @@
     <li><a class="active" href="/all-certificates-page">Certificates</a></li>
     <li><a href="/create-certificate-page">Create certificate</a></li>
   </ul>
-  <div v-for="c in certificates" :key="c" class="list-group">
-  <a href="#" class="list-group-item list-group-item-action flex-column align-items-start active">
-    <div class="d-flex w-100 justify-content-between">
-      <h5 class="mb-1">List group item heading</h5>
-      <small>3 days ago</small>
-    </div>
-    <p class="mb-1">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
-    <small>Donec id elit non mi porta.</small>
-  </a>
-</div>
+  <table  v-for="cert in certificates"
+            :key="cert.serialNumber" style="border: 1px solid gray; width: 50%; margin-left:25%; margin-top: 5%" class="table">
+    <thead style="border: 1px solid gray">
+      <tr>
+        <th></th>
+        <th>Certificate</th>
+        <th></th>
+        <th>Subject</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Certificate type:</th>
+        <td>{{cert.certificateType}}</td>
+        <th>Username:</th>
+
+        <td>{{cert.username}}</td> <!--Subject data-->
+      </tr>
+      <tr>
+        <th>Serial number:</th>
+        <td>{{cert.serialNumber}}</td>
+        <th>Country:</th>
+
+        <td>{{cert.countryCode}}</td>
+      </tr>
+      <tr>
+        <th>Start date:</th>
+        <td>12/12/2022</td>
+        <th>Organization unit:</th>
+
+        <td>{{cert.organization}}</td>
+      </tr>
+      <tr>
+        <th>Expiration date:</th>
+        <td>{{cert.endDate}}</td>
+        <th>Organization name:</th>
+
+        <td>{{cert.organizationalUnitName}}</td>
+      </tr>
+      <tr>
+        <th>Certificate status:</th>
+        <td>{{cert.status}}</td>
+        <th>Issuer common name</th>
+
+        <td>{{cert.issuerCommonName}}</td>
+      </tr>
+      <tr >
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+        <button  type="button" class="btn btn-primary">Issue certificate</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </template>
 
 <script>
