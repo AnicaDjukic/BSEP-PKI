@@ -13,7 +13,6 @@ public class NewCertificateDto {
     private Long issuerCertificateId;
     private String endDate;
     private CertificateType certificateType;
-    private CertificatePurposeType certificatePurposeType;
 
     public NewCertificateDto() {
     }
@@ -27,7 +26,6 @@ public class NewCertificateDto {
         this.issuerCertificateId = issuerCertificateId;
         this.endDate = endDate;
         this.certificateType = certificateType;
-        this.certificatePurposeType = certificatePurposeType;
     }
 
     public Long getSubjectUID() {
@@ -62,7 +60,4 @@ public class NewCertificateDto {
         return certificateType;
     }
 
-    public CertificatePurposeType getCertificatePurposeType() {
-        return certificatePurposeType;
-    }
 }

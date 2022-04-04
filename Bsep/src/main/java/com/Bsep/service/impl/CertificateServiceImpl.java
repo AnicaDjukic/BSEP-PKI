@@ -93,7 +93,7 @@ public class CertificateServiceImpl implements CerificateService {
                 iso8601Formater.parse(newCertificateDto.getEndDate()),
                 CertificateStatus.VALID,
                 newCertificateDto.getCertificateType(),
-                newCertificateDto.getCertificatePurposeType());
+                getCertificatePurposeBasedOnType(newCertificateDto.getCertificateType()));
         return certificateDataRepository.save(certificateData);
     }
 
@@ -106,6 +106,12 @@ public class CertificateServiceImpl implements CerificateService {
             certificateDtos.add(certificateMapper.toDTO(certificate, issuerCertificate.getSubjectUsername()));
         }
         return certificateDtos;
+    }
+
+    private CertificatePurposeType getCertificatePurposeBasedOnType(CertificateType certificateType) {
+        if(certificateType.equals(CertificateType.ROOT)) return CertificatePurposeType.SERVICE;
+        if(certificateType.equals(CertificateType.INTERMEDIATE)) return CertificatePurposeType.SUBSYSTEM;
+        return CertificatePurposeType.USER;
     }
 
     private SubjectData generateSubjectData(NewCertificateDto newCertificateDto) {
