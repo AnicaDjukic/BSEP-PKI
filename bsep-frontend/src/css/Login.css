@@ -2,9 +2,15 @@ html {
   background-color: #56baed;
 }
 
-body {
+.background {
   font-family: "Poppins", sans-serif;
-  height: 100vh;
+  background-image: url("../assets/background.jpg");
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-position: center center;
+  background-size: cover;
+  min-height: 900px;
+  padding-bottom: 3.5%;
 }
 
 a {

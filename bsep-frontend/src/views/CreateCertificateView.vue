@@ -4,10 +4,10 @@
     rel="stylesheet"
     id="bootstrap-css"
   />
-  <div class="wrapper fadeInDown" style="margin-top: 3em">
+  <div class="wrapper fadeInDown" style="margin-top: 1em">
     <div id="formContent">
       <!-- Login Form -->
-      <form style="margin-top: 3rem">
+      <form style="margin-top: 3em">
         <select
           class="browser-default custom-select"
           style="width: 20em"
@@ -17,7 +17,7 @@
         </select>
         <select
           class="browser-default custom-select"
-          style="width: 20em; margin-top: 2em"
+          style="width: 20em; margin-top: 1em"
           v-model="issuer"
           v-if="
             certificateType == 'INTERMEDIATE' ||
@@ -31,7 +31,7 @@
         </select>
         <select
           class="browser-default custom-select"
-          style="width: 20em; margin-top: 2em"
+          style="width: 20em; margin-top: 1em"
           v-model="subject"
         >
           <option selected hidden>Subject</option>
@@ -44,7 +44,7 @@
           </option>
         </select>
         <input
-          style="width: 20em; margin-top: 2em"
+          style="width: 20em; margin-top: 1em"
           type="text"
           class="fadeIn third"
           name="login"
@@ -81,7 +81,7 @@
           class="fadeIn third"
           id="datePicker"
         ></Datepicker>
-        <div style="text-align:left;margin-left:4em">
+        <div style="text-align:left;margin-left:4.3em">
         Key usages:
         </div>
         <select
@@ -101,10 +101,10 @@
           <option value="32768">decipherOnly</option>
         </select>
         <input
-          style="margin-top: 1em"
           type="button"
           class="fadeIn fourth"
           value="Create certificate"
+           style="background-color: rgb(3, 20, 50); margin-top: 1em"
           v-on:click="createCertificate()"
         />
       </form>

@@ -1,8 +1,8 @@
 <template>
   <div class="wrapper fadeInDown">
-    <div id="formContent">
+    <div id="formContent" style="margin-top: 10%; margin-bottom: 20.25%">
       <!-- Login Form -->
-      <form>
+      <form style="margin-top: 10%;">
         <input
           type="text"
           class="fadeIn second"
@@ -21,6 +21,7 @@
           type="button"
           class="fadeIn fourth"
           value="Log In"
+          style="background-color: rgb(3, 20, 50)"
           v-on:click="login()"
         />
       </form>

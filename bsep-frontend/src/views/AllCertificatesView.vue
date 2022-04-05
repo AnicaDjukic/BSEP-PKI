@@ -2,8 +2,8 @@
   <table
     v-for="cert in certificates"
     :key="cert.serialNumber"
-    style="border: 1px solid gray; width: 50%; margin-left: 25%; margin-top: 5%"
-    class="table"
+    style="border: 1px solid gray; width: 50%; margin-left: 25%; margin-top: 5%; background: white;zoom:1.1;"
+    class="table table-striped"
   >
     <thead style="border: 1px solid gray">
       <tr>
@@ -57,19 +57,21 @@
           <button
             type="button"
             class="btn btn-primary"
-            v-on:click="downloadCertificate(cert.id)"
+            style="background-color: rgb(3, 20, 50); border-color: rgb(3, 20, 50)"
+            v-on:click="showModal(cert.serialNumber)"
+            v-if="cert.certificateType != 'END_ENTITY'"
           >
-            Download certificate
+            Issue certificate
           </button>
         </td>
         <td>
           <button
             type="button"
             class="btn btn-primary"
-            v-on:click="showModal(cert.serialNumber)"
-            v-if="cert.certificateType != 'END_ENTITY'"
+            style="background-color: rgb(3, 20, 50); border-color: rgb(3, 20, 50); width: 105%; margin-left: -10%"
+            v-on:click="downloadCertificate(cert.id)"
           >
-            Issue certificate
+            Download certificate
           </button>
         </td>
       </tr>

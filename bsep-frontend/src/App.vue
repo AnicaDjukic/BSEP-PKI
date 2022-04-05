@@ -1,10 +1,16 @@
 <template>
-<ul v-if="role!==''">
-    <li><a class="active" href="/all-certificates-page">Certificates</a></li>
-    <li v-if="role==='ROLE_ADMIN'"><a href="/create-certificate-page">Create root certificate</a></li>
-    <li style="float:right" v-if="role!==''"><a v-on:click="logout" href="/">Logout</a></li>
-  </ul>
-  <router-view />
+  <div class="background">
+    <ul v-if="role !== ''">
+      <li><a class="active" href="/all-certificates-page">Certificates</a></li>
+      <li v-if="role === 'ROLE_ADMIN'">
+        <a href="/create-certificate-page">Create root certificate</a>
+      </li>
+      <li style="float: right" v-if="role !== ''">
+        <a v-on:click="logout" href="/">Logout</a>
+      </li>
+    </ul>
+    <router-view />
+  </div>
 </template>
 <script>
 export default {
@@ -32,7 +38,6 @@ export default {
       if (this.role == null) this.role = ''
     }
   }
-
 }
 </script>
 

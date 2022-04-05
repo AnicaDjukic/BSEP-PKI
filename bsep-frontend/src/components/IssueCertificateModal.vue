@@ -93,7 +93,7 @@
               <option value="32768">decipherOnly</option>
             </select>
             <input
-              style="margin-top: 1em; margin-left: 34%"
+              style="margin-top: 1em; margin-left: 34%; background-color: rgb(3, 20, 50); border-color: rgb(3, 20, 50)"
               type="button"
               class="btn btn-primary"
               value="Create certificate"
@@ -190,7 +190,7 @@ export default {
   overflow-x: auto;
   display: flex;
   flex-direction: column;
-  height: 90%;
+  height: 85%;
   width: 30%;
   position: relative;
   top: 25%;
@@ -205,7 +205,7 @@ export default {
 .modal-header {
   position: relative;
   border-bottom: 1px solid #eeeeee;
-  color: #4aae9b;
+  color: rgb(3, 20, 50);
   justify-content: space-between;
 }
 
