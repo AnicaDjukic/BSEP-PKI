@@ -135,6 +135,8 @@ export default {
     }
   },
   mounted: function () {
+    axios.defaults.headers.common.Authorization =
+                'Bearer ' + window.sessionStorage.getItem('jwt')
     axios
       .get('http://localhost:8080/api/v1/users/getAllUsers')
       .then((response) => {
@@ -165,6 +167,8 @@ export default {
         certificateType: this.certificateType,
         keyUsages: this.keyUsages
       }
+      axios.defaults.headers.common.Authorization =
+                'Bearer ' + window.sessionStorage.getItem('jwt')
       axios
         .post('http://localhost:8080/api/v1/certificate/create', newCertificate)
         .then((response) => {
