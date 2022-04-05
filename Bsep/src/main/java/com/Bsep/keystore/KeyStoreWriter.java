@@ -63,11 +63,17 @@ public class KeyStoreWriter {
         }
     }
 
-    public void write(String alias, PrivateKey privateKey, char[] password, Certificate certificate, KeyStore keyStore) {
+    public void writeRoot(String alias, PrivateKey privateKey, char[] password, Certificate[] certificates, KeyStore keyStore) {
         try {
+            keyStore.setKeyEntry(alias, privateKey, password, certificates);
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+    }
 
-            keyStore.setKeyEntry(alias, privateKey, password, new Certificate[]{certificate});
-            //keyStore.setKeyEntry(alias, privateKey, password, keyStore.getCertificateChain(alias));
+    public void writeNonRoot(String alias, PrivateKey privateKey, char[] password, Certificate[] certificates, KeyStore keyStore) {
+        try {
+            keyStore.setKeyEntry(alias, privateKey, password, certificates);
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
