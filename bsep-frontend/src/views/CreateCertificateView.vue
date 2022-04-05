@@ -15,10 +15,9 @@
         <select
           class="browser-default custom-select"
           style="width: 20em"
-          v-model="certificateType"
+          v-model="certificateType" disabled
         >
-          <option selected hidden>Certificate type</option>
-          <option value="ROOT">ROOT</option>
+          <option selected hidden value="ROOT">ROOT</option>
         </select>
         <select
           class="browser-default custom-select"
@@ -128,7 +127,7 @@ export default {
   components: { Datepicker },
   data: function () {
     return {
-      certificateType: 'Certificate type',
+      certificateType: 'ROOT',
       subject: 'Subject',
       issuer: 'Issuer',
       organization: '',
@@ -166,7 +165,7 @@ export default {
         organizationalUnitName: this.organizationUnitName,
         organizationEmail: this.organizationEmail,
         countryCode: this.countryCode,
-        issuerCertificateId: Number(this.issuer),
+        issuerCertificateId: this.issuer,
         endDate: this.formatDate(this.date),
         certificateType: this.certificateType,
         keyUsages: this.keyUsages

@@ -88,7 +88,11 @@ public class CertificateServiceImpl implements CerificateService {
     public CertificateData createCertificate(NewCertificateDto newCertificateDto) throws Exception {
         KeyPair keyPairSubject = generateKeyPair();
         SubjectData subjectData = generateSubjectData(newCertificateDto, keyPairSubject.getPublic());
-        String issuerSerialNumber = getIssuerSerialNumber(subjectData, newCertificateDto);
+        String issuerSerialNumber = "";
+        if (newCertificateDto.getCertificateType() == CertificateType.ROOT)
+            issuerSerialNumber = subjectData.getSerialNumber();
+        else
+            issuerSerialNumber = newCertificateDto.getIssuerCertificateSerialNumber();
         IssuerData issuerData = getIssuerData(newCertificateDto, keyPairSubject, subjectData);
 
         CertificateData certificateData = new CertificateData(subjectData.getSerialNumber(),
@@ -245,17 +249,11 @@ public class CertificateServiceImpl implements CerificateService {
         if (newCertificateDto.getCertificateType() == CertificateType.ROOT) {
             return new IssuerData(keyPairSubject.getPrivate(), subjectData.getX500name());
         }
-        CertificateData issuerCertificateData = certificateDataRepository.findById(newCertificateDto.getIssuerCertificateId()).get();
+        CertificateData issuerCertificateData = certificateDataRepository.findBySerialNumber(newCertificateDto.getIssuerCertificateSerialNumber());
         Certificate issuerCertificate = keyStoreRepository.readCertificate(issuerCertificateData.getCertificateType(), issuerCertificateData.getSerialNumber());
         PrivateKey issuerKey = keyStoreRepository.getPrivateKeyForKeyStore(((X509Certificate) issuerCertificate).getSerialNumber().toString(16), issuerCertificateData.getCertificateType());
         X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) issuerCertificate).getSubject();
         return new IssuerData(issuerKey, issuerName);
-    }
-
-    private String getIssuerSerialNumber(SubjectData subjectData, NewCertificateDto certificateDto) {
-        if (certificateDto.getCertificateType() == CertificateType.ROOT)
-            return subjectData.getSerialNumber();
-        return certificateDataRepository.findById(certificateDto.getIssuerCertificateId()).get().getSerialNumber();
     }
 
     private String getRDNValueFromSubjectData(SubjectData subjectData, ASN1ObjectIdentifier asn1ObjectIdentifier) {

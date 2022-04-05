@@ -12,7 +12,7 @@ public class NewCertificateDto {
     private String organizationalUnitName;
     private String organizationEmail;
     private String countryCode;
-    private Long issuerCertificateId;
+    private String issuerCertificateSerialNumber;
     private String endDate;
     private CertificateType certificateType;
     private List<String> keyUsages;
@@ -20,10 +20,8 @@ public class NewCertificateDto {
     public NewCertificateDto() {
     }
 
-   
-
     public NewCertificateDto(Long subjectUID, String organization, String organizationalUnitName,
-			String organizationEmail, String countryCode, Long issuerCertificateId, String endDate,
+			String organizationEmail, String countryCode, String issuerCertificateSerialNumber, String endDate,
 			CertificateType certificateType, List<String> keyUsages) {
 		super();
 		this.subjectUID = subjectUID;
@@ -31,7 +29,7 @@ public class NewCertificateDto {
 		this.organizationalUnitName = organizationalUnitName;
 		this.organizationEmail = organizationEmail;
 		this.countryCode = countryCode;
-		this.issuerCertificateId = issuerCertificateId;
+		this.issuerCertificateSerialNumber = issuerCertificateSerialNumber;
 		this.endDate = endDate;
 		this.certificateType = certificateType;
 		this.keyUsages = keyUsages;
@@ -59,8 +57,8 @@ public class NewCertificateDto {
         return countryCode;
     }
 
-    public Long getIssuerCertificateId() {
-        return issuerCertificateId;
+    public String getIssuerCertificateSerialNumber() {
+        return issuerCertificateSerialNumber;
     }
 
     public String getEndDate() {
@@ -71,12 +69,8 @@ public class NewCertificateDto {
         return certificateType;
     }
 
-
-
 	public List<String> getKeyUsages() {
 		return keyUsages;
 	}
 
-
-    
 }

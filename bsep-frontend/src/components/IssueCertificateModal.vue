@@ -1,113 +1,247 @@
 <template>
-<transition name="modal-fade">
-  <div centered class="modal-backdrop">
-    <div class="modal">
-      <header class="modal-header">
-        <slot name="header">
-            Reservation
-        </slot>
-        <button
-          type="button"
-          class="btn-close"
-          v-on:click="close()"
-        >
-          x
-        </button>
-      </header>
+  <transition name="modal-fade">
+    <div centered class="modal-backdrop">
+      <div class="modal">
+        <header class="modal-header">
+          <slot name="header"> Create certificate </slot>
+          <button type="button" class="btn-close" v-on:click="close()">
+            x
+          </button>
+        </header>
 
-      <section class="modal-body">
-        <slot name="body">
-
-        </slot>
-       </section>
-
+        <section class="modal-body">
+          <slot name="body">
+            <select
+              class="form-select"
+              aria-label="Default select example"
+              v-model="certificateType"
+              style="width: 70%; margin-left: 15%"
+            >
+              <option selected hidden>Certificate type</option>
+              <option value="INTERMEDIATE">INTERMEDIATE</option>
+              <option value="END_ENTITY">END ENTITY</option>
+            </select>
+            <select
+              class="browser-default custom-select"
+              style="width: 70%; margin-top: 1em; margin-left: 15%"
+              v-model="subject"
+            >
+              <option selected hidden>Subject</option>
+              <option
+                v-for="option in allSubjects"
+                :value="option.id"
+                :key="option.username"
+              >
+                {{ option.username }}
+              </option>
+            </select>
+            <input
+              style="width: 70%; margin-top: 1em; margin-left: 15%"
+              type="text"
+              class="form-control"
+              name="login"
+              placeholder="Oragnization"
+              v-model="organization"
+            />
+            <input
+              style="width: 70%; margin-top: 1em; margin-left: 15%"
+              type="text"
+              class="form-control"
+              name="login"
+              placeholder="Oragnization unit name"
+              v-model="organizationUnitName"
+            />
+            <input
+              style="width: 70%; margin-top: 1em; margin-left: 15%"
+              type="text"
+              class="form-control"
+              name="orgEmail"
+              placeholder="Organization email"
+              v-model="organizationEmail"
+            />
+            <input
+              style="width: 70%; margin-top: 1em; margin-left: 15%"
+              type="text"
+              class="form-control"
+              name="orgEmail"
+              placeholder="Country code"
+              v-model="countryCode"
+            />
+            <Datepicker
+              v-model="date"
+              style="width: 70%; margin-top: 1em; margin-left: 15%"
+              class="fadeIn third"
+              id="datePicker"
+            ></Datepicker>
+            <div style="text-align: left; margin-left: 15%; margin-top: 3%">
+              Key usages:
+            </div>
+            <select
+              class="browser-default custom-select"
+              style="width: 70%; margin-top: 1em; margin-left: 15%"
+              v-model="keyUsages"
+              multiple
+            >
+              <option selected hidden>Certificate type</option>
+              <option value="128">digitalSignature</option>
+              <option value="64">nonRepudiation</option>
+              <option value="32">keyEncipherment</option>
+              <option value="16">dataEncipherment</option>
+              <option value="8">keyAgreement</option>
+              <option value="4">keyCertSign</option>
+              <option value="2">cRLSign</option>
+              <option value="1">encipherOnly</option>
+              <option value="32768">decipherOnly</option>
+            </select>
+            <input
+              style="margin-top: 1em; margin-left: 34%"
+              type="button"
+              class="btn btn-primary"
+              value="Create certificate"
+              v-on:click="createCertificate()"
+            />
+          </slot>
+        </section>
+      </div>
     </div>
-  </div>
-</transition>
+  </transition>
 </template>
 <script>
+import axios from 'axios'
+import Datepicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 export default {
   name: 'IssueCertificateModal',
-  components: {},
+  props: ['issuerCertificateSerialNumber'],
+  components: { Datepicker },
   data: function () {
     return {
-
+      certificateType: 'Certificate type',
+      subject: 'Subject',
+      issuer: 'Issuer',
+      organization: '',
+      organizationUnitName: '',
+      organizationEmail: '',
+      countryCode: '',
+      allSubjects: [],
+      date: null,
+      keyUsages: []
     }
   },
+  mounted: function () {
+    axios
+      .get('http://localhost:8080/api/v1/users/getAllUsers')
+      .then((response) => {
+        this.allSubjects = response.data
+      })
+  },
   methods: {
+    formatDate: function (date) {
+      const d = new Date(date)
+      let month = '' + (d.getMonth() + 1)
+      let day = '' + d.getDate()
+      const year = d.getFullYear()
+
+      if (month.length < 2) month = '0' + month
+      if (day.length < 2) day = '0' + day
+
+      return [year, month, day].join('-')
+    },
     close () {
       this.$emit('close')
+    },
+    createCertificate: function () {
+      const newCertificate = {
+        subjectUID: Number(this.subject),
+        organization: this.organization,
+        organizationalUnitName: this.organizationUnitName,
+        organizationEmail: this.organizationEmail,
+        countryCode: this.countryCode,
+        issuerCertificateSerialNumber: this.issuerCertificateSerialNumber,
+        endDate: this.formatDate(this.date),
+        certificateType: this.certificateType,
+        keyUsages: this.keyUsages
+      }
+      axios
+        .post('http://localhost:8080/api/v1/certificate/create', newCertificate)
+        .then((response) => {
+          axios
+            .get('http://localhost:8080/api/v1/users/getAllUsers')
+            .then((response) => {
+              this.allSubjects = response.data
+            })
+        })
     }
   }
 }
 </script>
 <style>
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .modal {
-    background: #FFFFFF;
-    box-shadow: 2px 2px 20px 1px;
-    overflow-x: auto;
-    display: flex;
-    flex-direction: column;
-    height: 60%;
-    width: 50%;
-     position: relative;
+  margin-top: 18%;
+  background: #ffffff;
+  box-shadow: 2px 2px 20px 1px;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  height: 90%;
+  width: 30%;
+  position: relative;
   top: 25%;
   transform: translateY(-50%);
+}
+.modal-header,
+.modal-footer {
+  padding: 15px;
+  display: flex;
+}
 
-  }
-  .modal-header,
-  .modal-footer {
-    padding: 15px;
-    display: flex;
-  }
+.modal-header {
+  position: relative;
+  border-bottom: 1px solid #eeeeee;
+  color: #4aae9b;
+  justify-content: space-between;
+}
 
-  .modal-header {
-    position: relative;
-    border-bottom: 1px solid #eeeeee;
-    color: #4AAE9B;
-    justify-content: space-between;
-  }
+.modal-footer {
+  border-top: 1px solid #eeeeee;
+  flex-direction: column;
+  justify-content: flex-end;
+}
 
-  .modal-footer {
-    border-top: 1px solid #eeeeee;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
+.modal-body {
+  position: relative;
+  padding: 20px 10px;
+}
 
-  .modal-body {
-    position: relative;
-    padding: 20px 10px;
-  }
+.btn-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: none;
+  font-size: 20px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #4aae9b;
+  background: transparent;
+}
 
-  .btn-close {
-    position: absolute;
-    top: 0;
-    right: 0;
-    border: none;
-    font-size: 20px;
-    padding: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #4AAE9B;
-    background: transparent;
-  }
-
-  .btn-green {
-    color: white;
-    background: #4AAE9B;
-    border: 1px solid #4AAE9B;
-    border-radius: 2px;
-  }
+.btn-green {
+  color: white;
+  background: #4aae9b;
+  border: 1px solid #4aae9b;
+  border-radius: 2px;
+}
 </style>
