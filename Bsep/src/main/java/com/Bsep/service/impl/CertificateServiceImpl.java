@@ -32,17 +32,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -156,6 +149,31 @@ public class CertificateServiceImpl implements CerificateService {
         return certificateDtos;
     }
 
+    private boolean isCertificateValid(CertificateData certificate) {
+        verifySignature(certificate);
+        checkExpiration(certificate);
+        return certificate.getCertificateStatus() == CertificateStatus.VALID;
+    }
+
+    private void verifySignature(CertificateData certificateData) {
+        Certificate certificate = keyStoreRepository.readCertificate(certificateData.getCertificateType(),certificateData.getSerialNumber());
+        Certificate[] certificateChain = getCertificateChain(certificateData, certificate);
+        if(certificateChain.length < 2)     // za ROOT sertifikate
+            return;
+        try {
+            for(int i = 0; i < certificateChain.length - 1; i++){
+                certificateChain[i].verify(certificateChain[i+1].getPublicKey());
+            }
+        } catch (SignatureException | CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException e) {
+            certificateData.setCertificateStatus(CertificateStatus.REVOKED);    // dodati status INVALID
+        }
+    }
+
+    private void checkExpiration(CertificateData certificateData) {
+        if(certificateData.getEndDate().before(new Date()))
+            certificateData.setCertificateStatus(CertificateStatus.EXPIRED);
+    }
+
     private File getCertificatePath(String serialNumber) {
         return new File(CERTIFICATE_DIRECTORY + File.separator + serialNumber + ".cer");
     }
@@ -163,7 +181,7 @@ public class CertificateServiceImpl implements CerificateService {
     private void createCertificateFile(Long id) throws Exception {
         Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
         CertificateData certificateData = certificateDataRepository.findById(id).get();
-        if (isCertificateValid(certificateData)) {
+        if (!isCertificateValid(certificateData)) {
             throw new Exception();
         }
         byte[] bytes = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber()).getEncoded();
@@ -178,10 +196,6 @@ public class CertificateServiceImpl implements CerificateService {
         try (FileOutputStream fos = new FileOutputStream(fileOutput)) {
             fos.write(bytes);
         }
-    }
-
-    private boolean isCertificateValid(CertificateData certificate) {
-        return certificate.getCertificateStatus() != CertificateStatus.VALID;
     }
 
     private CertificatePurposeType getCertificatePurposeBasedOnType(CertificateType certificateType) {
