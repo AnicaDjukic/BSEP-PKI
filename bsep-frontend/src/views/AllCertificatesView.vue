@@ -100,6 +100,8 @@ export default {
     }
   },
   mounted: function () {
+    axios.defaults.headers.common.Authorization =
+                'Bearer ' + window.sessionStorage.getItem('jwt')
     axios.get('http://localhost:8080/api/v1/certificate').then((response) => {
       this.certificates = response.data
     })
@@ -110,10 +112,16 @@ export default {
       this.isModalVisible = true
     },
     downloadCertificate (id) {
+      axios.defaults.headers.common.Authorization =
+                'Bearer ' + window.sessionStorage.getItem('jwt')
       axios
         .get('http://localhost:8080/api/v1/certificate/' + id + '/download')
         .then((response) => {
-          alert('Success')
+          const blob = new Blob([response.data], {
+            type: 'application/x-x509-ca-cert'
+          })
+          const url = window.URL.createObjectURL(blob)
+          window.open(url)
         })
     },
     closeModal () {

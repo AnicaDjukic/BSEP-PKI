@@ -145,6 +145,17 @@ public class CertificateServiceImpl implements CerificateService {
         }
     }
 
+    @Override
+    public List<CertificateDto> getByUsername(String username) {
+        List<CertificateDto> certificateDtos = new ArrayList<>();
+        List<CertificateData> certificates = certificateDataRepository.findBySubjectUsername(username);
+        for (CertificateData certificate : certificates) {
+            CertificateData issuerCertificate = certificateDataRepository.findBySerialNumber(certificate.getIssuerSerialNumber());
+            certificateDtos.add(certificateMapper.toDTO(certificate, issuerCertificate.getSubjectUsername()));
+        }
+        return certificateDtos;
+    }
+
     private File getCertificatePath(String serialNumber) {
         return new File(CERTIFICATE_DIRECTORY + File.separator + serialNumber + ".cer");
     }

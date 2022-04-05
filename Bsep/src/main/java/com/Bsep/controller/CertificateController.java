@@ -3,11 +3,14 @@ package com.Bsep.controller;
 import com.Bsep.dto.CertificateDto;
 import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.model.CertificateData;
+import com.Bsep.model.Role;
 import com.Bsep.service.impl.CertificateServiceImpl;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -28,7 +33,6 @@ public class CertificateController {
         this.certificateService = certificateService;
     }
 
-
     @PostMapping(value = "/create")
     //@PreAuthorize("hasRole('ROLE_ADMIN')")	
     public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws Exception {
@@ -37,8 +41,13 @@ public class CertificateController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CertificateDto>> getAllCertificates(@RequestParam(required = false) Boolean isCa) {
-        List<CertificateDto> certificates = certificateService.getAll(isCa);
+    public ResponseEntity<List<CertificateDto>> getAllCertificates(@RequestParam(required = false) Boolean isCa, Authentication authentication) {
+        List<GrantedAuthority> roles= (List<GrantedAuthority>) authentication.getAuthorities();
+        List<CertificateDto> certificates;
+        if(roles.get(0).getAuthority().equals("ROLE_USER"))
+            certificates = certificateService.getByUsername(authentication.getName());
+         else
+            certificates = certificateService.getAll(isCa);
         return ResponseEntity.ok(certificates);
     }
 

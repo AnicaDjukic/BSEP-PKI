@@ -164,11 +164,7 @@ export default {
       axios
         .post('http://localhost:8080/api/v1/certificate/create', newCertificate)
         .then((response) => {
-          axios
-            .get('http://localhost:8080/api/v1/users/getAllUsers')
-            .then((response) => {
-              this.allSubjects = response.data
-            })
+          window.location.reload()
         })
     }
   }

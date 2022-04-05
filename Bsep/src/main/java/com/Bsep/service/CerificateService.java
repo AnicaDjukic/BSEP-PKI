@@ -14,4 +14,6 @@ public interface CerificateService {
     List<CertificateDto> getAll(Boolean isCa);
 
     Resource getCertificateResource(Long id);
+
+    List<CertificateDto> getByUsername(String name);
 }
