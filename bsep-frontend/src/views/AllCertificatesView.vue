@@ -54,7 +54,7 @@
         <td></td>
         <td></td>
         <td>
-        <button  type="button" class="btn btn-primary" v-on:click="showModal()">Issue certificate</button>
+        <button  type="button" class="btn btn-primary" v-on:click="showModal(cert.serialNumber)" v-if="cert.certificateType != 'END_ENTITY'">Issue certificate</button>
         </td>
       </tr>
     </tbody>
@@ -62,6 +62,7 @@
   <IssueCertificateModal
       v-show="isModalVisible"
       @close="closeModal"
+      v-bind:issuerCertificateSerialNumber='issuerCertificateSerialNumber'
     />
 </template>
 
@@ -74,7 +75,8 @@ export default {
   data: function () {
     return {
       isModalVisible: false,
-      certificates: []
+      certificates: [],
+      issuerCertificateSerialNumber: ''
     }
   },
   mounted: function () {
@@ -85,7 +87,8 @@ export default {
       })
   },
   methods: {
-    showModal () {
+    showModal (serialNumber) {
+      this.issuerCertificateSerialNumber = serialNumber
       this.isModalVisible = true
     },
     closeModal () {
