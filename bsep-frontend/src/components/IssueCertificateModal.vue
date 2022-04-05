@@ -88,7 +88,6 @@
               <option value="32">keyEncipherment</option>
               <option value="16">dataEncipherment</option>
               <option value="8">keyAgreement</option>
-              <option value="4">keyCertSign</option>
               <option value="2">cRLSign</option>
               <option value="1">encipherOnly</option>
               <option value="32768">decipherOnly</option>

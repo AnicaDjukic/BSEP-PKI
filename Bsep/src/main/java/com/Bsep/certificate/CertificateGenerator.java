@@ -93,7 +93,12 @@ public class CertificateGenerator {
         }
       
 		try {
-			certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage));
+            if(newCertificateDto.getCertificateType() != CertificateType.END_ENTITY){
+                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage | KeyUsage.keyCertSign));
+            }else{
+                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage));
+            }
+
 		} catch (CertIOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
