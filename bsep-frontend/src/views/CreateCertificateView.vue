@@ -6,7 +6,7 @@
   />
   <ul>
     <li><a class="active" href="/all-certificates-page">Certificates</a></li>
-    <li><a href="/create-certificate-page">Create certificate</a></li>
+    <li><a href="/create-certificate-page">Create root certificate</a></li>
   </ul>
   <div class="wrapper fadeInDown" style="margin-top: 3em">
     <div id="formContent">

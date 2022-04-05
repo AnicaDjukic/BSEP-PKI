@@ -11,7 +11,7 @@ public class CertificateMapper {
     SimpleDateFormat iso8601Formater = new SimpleDateFormat("yyyy-MM-dd");
 
     public CertificateDto toDTO(CertificateData certificateData, String issuerCommonName) {
-        return new CertificateDto(certificateData.getSerialNumber(),
+        return new CertificateDto(certificateData.getId(), certificateData.getSerialNumber(),
                 certificateData.getSubjectUsername(),
                 certificateData.getOrganization(),
                 certificateData.getOrganizationalUnitName(),

@@ -5,6 +5,7 @@ import com.Bsep.model.CertificateType;
 
 public class CertificateDto {
 
+    private Long id;
     private String serialNumber;
     private String username;
     private String organization;
@@ -18,7 +19,8 @@ public class CertificateDto {
     public CertificateDto() {
     }
 
-    public CertificateDto(String serialNumber, String username, String organization, String organizationalUnitName, String countryCode, String issuerCommonName, String endDate, CertificateStatus status, CertificateType certificateType) {
+    public CertificateDto(Long id, String serialNumber, String username, String organization, String organizationalUnitName, String countryCode, String issuerCommonName, String endDate, CertificateStatus status, CertificateType certificateType) {
+        this.id = id;
         this.serialNumber = serialNumber;
         this.username = username;
         this.organization = organization;
@@ -29,6 +31,8 @@ public class CertificateDto {
         this.status = status;
         this.certificateType = certificateType;
     }
+
+    public Long getId() {return id;}
 
     public String getSerialNumber() {
         return serialNumber;

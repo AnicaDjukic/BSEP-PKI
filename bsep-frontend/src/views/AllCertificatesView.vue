@@ -1,10 +1,14 @@
 <template>
   <ul>
     <li><a class="active" href="/all-certificates-page">Certificates</a></li>
-    <li><a href="/create-certificate-page">Create certificate</a></li>
+    <li><a href="/create-certificate-page">Create root certificate</a></li>
   </ul>
-  <table  v-for="cert in certificates"
-            :key="cert.serialNumber" style="border: 1px solid gray; width: 50%; margin-left:25%; margin-top: 5%" class="table">
+  <table
+    v-for="cert in certificates"
+    :key="cert.serialNumber"
+    style="border: 1px solid gray; width: 50%; margin-left: 25%; margin-top: 5%"
+    class="table"
+  >
     <thead style="border: 1px solid gray">
       <tr>
         <th></th>
@@ -16,54 +20,70 @@
     <tbody>
       <tr>
         <th>Certificate type:</th>
-        <td>{{cert.certificateType}}</td>
+        <td>{{ cert.certificateType }}</td>
         <th>Username:</th>
 
-        <td>{{cert.username}}</td> <!--Subject data-->
+        <td>{{ cert.username }}</td>
+        <!--Subject data-->
       </tr>
       <tr>
         <th>Serial number:</th>
-        <td>{{cert.serialNumber}}</td>
+        <td>{{ cert.serialNumber }}</td>
         <th>Country:</th>
 
-        <td>{{cert.countryCode}}</td>
+        <td>{{ cert.countryCode }}</td>
       </tr>
       <tr>
         <th>Start date:</th>
         <td>12/12/2022</td>
         <th>Organization unit:</th>
 
-        <td>{{cert.organization}}</td>
+        <td>{{ cert.organization }}</td>
       </tr>
       <tr>
         <th>Expiration date:</th>
-        <td>{{cert.endDate}}</td>
+        <td>{{ cert.endDate }}</td>
         <th>Organization name:</th>
 
-        <td>{{cert.organizationalUnitName}}</td>
+        <td>{{ cert.organizationalUnitName }}</td>
       </tr>
       <tr>
         <th>Certificate status:</th>
-        <td>{{cert.status}}</td>
+        <td>{{ cert.status }}</td>
         <th>Issuer common name</th>
 
-        <td>{{cert.issuerCommonName}}</td>
+        <td>{{ cert.issuerCommonName }}</td>
       </tr>
-      <tr >
-        <td></td>
+      <tr>
         <td></td>
         <td></td>
         <td>
-        <button  type="button" class="btn btn-primary" v-on:click="showModal(cert.serialNumber)" v-if="cert.certificateType != 'END_ENTITY'">Issue certificate</button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            v-on:click="downloadCertificate(cert.id)"
+          >
+            Download certificate
+          </button>
+        </td>
+        <td>
+          <button
+            type="button"
+            class="btn btn-primary"
+            v-on:click="showModal(cert.serialNumber)"
+            v-if="cert.certificateType != 'END_ENTITY'"
+          >
+            Issue certificate
+          </button>
         </td>
       </tr>
     </tbody>
   </table>
   <IssueCertificateModal
-      v-show="isModalVisible"
-      @close="closeModal"
-      v-bind:issuerCertificateSerialNumber='issuerCertificateSerialNumber'
-    />
+    v-show="isModalVisible"
+    @close="closeModal"
+    v-bind:issuerCertificateSerialNumber="issuerCertificateSerialNumber"
+  />
 </template>
 
 <script>
@@ -80,16 +100,21 @@ export default {
     }
   },
   mounted: function () {
-    axios
-      .get('http://localhost:8080/api/v1/certificate')
-      .then((response) => {
-        this.certificates = response.data
-      })
+    axios.get('http://localhost:8080/api/v1/certificate').then((response) => {
+      this.certificates = response.data
+    })
   },
   methods: {
     showModal (serialNumber) {
       this.issuerCertificateSerialNumber = serialNumber
       this.isModalVisible = true
+    },
+    downloadCertificate (id) {
+      axios
+        .get('http://localhost:8080/api/v1/certificate/' + id + '/download')
+        .then((response) => {
+          alert('Success')
+        })
     },
     closeModal () {
       this.isModalVisible = false
@@ -8416,5 +8441,4 @@ a.text-dark:hover {
   }
 }
 /*# sourceMappingURL=bootstrap.min.css.map */
-
 </style>
