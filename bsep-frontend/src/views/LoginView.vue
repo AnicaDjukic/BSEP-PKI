@@ -50,7 +50,8 @@ export default {
         .post('http://localhost:8080/api/v1/auth/login', user)
         .then((response) => {
           window.sessionStorage.setItem('jwt', response.data.jwt)
-          this.$router.push('/admin-page')
+          window.sessionStorage.setItem('role', response.data.role)
+          this.$router.push('/all-certificates-page')
         })
     }
   }

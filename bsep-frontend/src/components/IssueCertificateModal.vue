@@ -22,7 +22,7 @@
               <option value="END_ENTITY">END ENTITY</option>
             </select>
             <select
-              class="browser-default custom-select"
+              class="form-select"
               style="width: 70%; margin-top: 1em; margin-left: 15%"
               v-model="subject"
             >
@@ -77,7 +77,7 @@
               Key usages:
             </div>
             <select
-              class="browser-default custom-select"
+              class="form-select"
               style="width: 70%; margin-top: 1em; margin-left: 15%"
               v-model="keyUsages"
               multiple
