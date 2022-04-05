@@ -1,4 +1,9 @@
 <template>
+<link
+    href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    rel="stylesheet"
+    id="bootstrap-css"
+  />
   <ul>
     <li><a class="active" href="/all-certificates-page">Certificates</a></li>
     <li><a href="/create-certificate-page">Create certificate</a></li>
