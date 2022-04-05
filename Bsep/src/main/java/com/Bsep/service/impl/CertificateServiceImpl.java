@@ -78,7 +78,6 @@ public class CertificateServiceImpl implements CerificateService {
         SubjectData subjectData = generateSubjectData(newCertificateDto, keyPairSubject.getPublic());
         String issuerSerialNumber = getIssuerSerialNumber(subjectData, newCertificateDto);
         IssuerData issuerData = getIssuerData(newCertificateDto, keyPairSubject, subjectData);
-
         CertificateData certificateData = new CertificateData(subjectData.getSerialNumber(),
                 getRDNValueFromSubjectData(subjectData, BCStyle.CN),
                 getRDNValueFromSubjectData(subjectData, BCStyle.O),

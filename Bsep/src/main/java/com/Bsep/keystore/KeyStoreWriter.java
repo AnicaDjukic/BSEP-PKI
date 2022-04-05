@@ -63,7 +63,7 @@ public class KeyStoreWriter {
         }
     }
 
-    public void writeRoot(String alias, PrivateKey privateKey, char[] password, Certificate[] certificates, KeyStore keyStore) {
+    public void write(String alias, PrivateKey privateKey, char[] password, Certificate[] certificates, KeyStore keyStore) {
         try {
             keyStore.setKeyEntry(alias, privateKey, password, certificates);
         } catch (KeyStoreException e) {
