@@ -4,7 +4,9 @@ import com.Bsep.dto.CertificateDto;
 import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.model.CertificateData;
 import com.Bsep.service.impl.CertificateServiceImpl;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,11 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateEncodingException;
-import java.text.ParseException;
 import java.util.List;
 
 @RestController
@@ -34,7 +31,7 @@ public class CertificateController {
 
     @PostMapping(value = "/create")
     //@PreAuthorize("hasRole('ROLE_ADMIN')")	
-    public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, ParseException {
+    public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws Exception {
         CertificateData newCertificate = certificateService.createCertificate(newCertificateDto);
         return ResponseEntity.ok(newCertificate);
     }
@@ -45,14 +42,20 @@ public class CertificateController {
         return ResponseEntity.ok(certificates);
     }
 
-    @GetMapping(value = "/{id}/file")
-    public ResponseEntity<Boolean> createCertificateFile(@PathVariable Long id) {
+    @GetMapping(value = "/{id}/download")
+    public ResponseEntity<Resource> download(@PathVariable Long id) {
         try {
-            certificateService.createCertificateFile(id);
-            return new ResponseEntity<>(HttpStatus.OK);
+            Resource resource = certificateService.getCertificateResource(id);
+            String contentType = "application/octet-stream";
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .headers(headers)
+                    .body(resource);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().build();
         }
     }
 }

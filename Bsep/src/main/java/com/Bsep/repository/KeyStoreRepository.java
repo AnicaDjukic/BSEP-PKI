@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -24,9 +26,13 @@ public class KeyStoreRepository {
     private KeyStore keyStoreIntermediate;
     private KeyStore keyStoreEndEntity;
 
-    private final String KS_ROOT_PATH = "root.jks";
-    private final String KS_INTERMEDIATE_PATH = "intermediate.jks";
-    private final String KS_END_ENTITY_PATH = "endEntity.jks";
+
+    private final String keyStoresDirectory = "data" + File.separator + "keystores";
+
+    private final String KS_ROOT_PATH = keyStoresDirectory + File.separator + "root.jks";
+    private final String KS_INTERMEDIATE_PATH = keyStoresDirectory + File.separator + "intermediate.jks";
+    private final String KS_END_ENTITY_PATH = keyStoresDirectory + File.separator + "endEntity.jks";
+
 
     private final String PASSWORD = "password";
 
@@ -34,7 +40,8 @@ public class KeyStoreRepository {
     private KeyStoreReader keyStoreReader = new KeyStoreReader();
 
 
-    public KeyStoreRepository() {
+    public KeyStoreRepository() throws IOException {
+        Files.createDirectories(Paths.get(keyStoresDirectory));
         Security.addProvider(new BouncyCastleProvider());
         try {
             keyStoreRoot = KeyStore.getInstance("JKS");

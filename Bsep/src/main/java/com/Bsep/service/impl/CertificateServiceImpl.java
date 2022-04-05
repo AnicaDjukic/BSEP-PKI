@@ -22,10 +22,16 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStoreException;
@@ -62,6 +68,7 @@ public class CertificateServiceImpl implements CerificateService {
     private final String END_CERT = "-----END CERTIFICATE-----";
     private final String LINE_SEPARATOR = System.getProperty("line.separator");
     private final SimpleDateFormat iso8601Formater = new SimpleDateFormat("yyyy-MM-dd");
+    private final String CERTIFICATE_DIRECTORY = "data" + File.separator + "certificates";
 
 
     public CertificateServiceImpl(UserService userService, CertificateDataRepository certificateDataRepository, KeyStoreRepository keyStoreRepository, CertificateMapper certificateMapper) {
@@ -71,8 +78,14 @@ public class CertificateServiceImpl implements CerificateService {
         this.certificateMapper = certificateMapper;
     }
 
+
+    @PostConstruct
+    public void init() throws IOException {
+        Files.createDirectories(Paths.get(CERTIFICATE_DIRECTORY));
+    }
+
     @Override
-    public CertificateData createCertificate(NewCertificateDto newCertificateDto) throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, ParseException {
+    public CertificateData createCertificate(NewCertificateDto newCertificateDto) throws Exception {
         KeyPair keyPairSubject = generateKeyPair();
         SubjectData subjectData = generateSubjectData(newCertificateDto, keyPairSubject.getPublic());
         String issuerSerialNumber = getIssuerSerialNumber(subjectData, newCertificateDto);
@@ -96,6 +109,7 @@ public class CertificateServiceImpl implements CerificateService {
 
         keyStoreRepository.saveCertificate(keyPairSubject.getPrivate(), x509certificate, newCertificateDto.getCertificateType(), certificateChain);
 
+        createCertificateFile(savedCertificateData.getId());
         return savedCertificateData;
     }
 
@@ -111,7 +125,27 @@ public class CertificateServiceImpl implements CerificateService {
     }
 
     @Override
-    public void createCertificateFile(Long id) throws Exception {
+    public Resource getCertificateResource(Long id) {
+        try {
+            CertificateData certificateData = certificateDataRepository.findById(id).get();
+            File filePath = getCertificatePath(certificateData.getSerialNumber());
+            org.springframework.core.io.Resource resource = new UrlResource(filePath.toPath().toUri());
+            if (resource.exists()) {
+                return resource;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private File getCertificatePath(String serialNumber) {
+        return new File(CERTIFICATE_DIRECTORY + File.separator + serialNumber + ".cer");
+    }
+
+    private void createCertificateFile(Long id) throws Exception {
         Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
         CertificateData certificateData = certificateDataRepository.findById(id).get();
         if (isCertificateValid(certificateData)) {
@@ -122,7 +156,7 @@ public class CertificateServiceImpl implements CerificateService {
         String certificate = BEGIN_CERT + LINE_SEPARATOR + new String(encoder.encode(bytes)) + LINE_SEPARATOR
                 + END_CERT;
 
-        writeBytesToFile(certificateData.getSerialNumber() + ".cer", certificate.getBytes());
+        writeBytesToFile("data" + File.separator + "certificates" + File.separator + certificateData.getSerialNumber() + ".cer", certificate.getBytes());
     }
 
     private void writeBytesToFile(String fileOutput, byte[] bytes) throws IOException {
