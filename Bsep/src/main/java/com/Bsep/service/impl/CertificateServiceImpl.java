@@ -4,11 +4,18 @@ import com.Bsep.certificate.CertificateGenerator;
 import com.Bsep.dto.CertificateDto;
 import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.mapper.CertificateMapper;
-import com.Bsep.model.*;
+import com.Bsep.model.CertificateData;
+import com.Bsep.model.CertificatePurposeType;
+import com.Bsep.model.CertificateStatus;
+import com.Bsep.model.CertificateType;
+import com.Bsep.model.IssuerData;
+import com.Bsep.model.SubjectData;
+import com.Bsep.model.User;
 import com.Bsep.repository.CertificateDataRepository;
 import com.Bsep.repository.KeyStoreRepository;
 import com.Bsep.service.CerificateService;
 import com.Bsep.service.UserService;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -17,12 +24,15 @@ import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
@@ -31,6 +41,7 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +58,11 @@ public class CertificateServiceImpl implements CerificateService {
 
     private final CertificateMapper certificateMapper;
 
+    private final String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
+    private final String END_CERT = "-----END CERTIFICATE-----";
+    private final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private final SimpleDateFormat iso8601Formater = new SimpleDateFormat("yyyy-MM-dd");
+
 
     public CertificateServiceImpl(UserService userService, CertificateDataRepository certificateDataRepository, KeyStoreRepository keyStoreRepository, CertificateMapper certificateMapper) {
         this.userService = userService;
@@ -57,39 +73,30 @@ public class CertificateServiceImpl implements CerificateService {
 
     @Override
     public CertificateData createCertificate(NewCertificateDto newCertificateDto) throws UnrecoverableKeyException, CertificateEncodingException, KeyStoreException, NoSuchAlgorithmException, ParseException {
+        KeyPair keyPairSubject = generateKeyPair();
+        SubjectData subjectData = generateSubjectData(newCertificateDto, keyPairSubject.getPublic());
+        String issuerSerialNumber = getIssuerSerialNumber(subjectData, newCertificateDto);
+        IssuerData issuerData = getIssuerData(newCertificateDto, keyPairSubject, subjectData);
 
-        SimpleDateFormat iso8601Formater = new SimpleDateFormat("yyyy-MM-dd");
-        SubjectData subjectData = generateSubjectData(newCertificateDto);
-        X509Certificate x509certificate = null;
-        KeyPair keyPairIssuer = generateKeyPair();
-        IssuerData issuerData;
-        String issuerSerialNumber;
-
-        if (newCertificateDto.getCertificateType().equals(CertificateType.ROOT)) {
-            issuerSerialNumber = subjectData.getSerialNumber();
-            issuerData = new IssuerData(keyPairIssuer.getPrivate(), subjectData.getX500name());
-        } else {
-            issuerSerialNumber = certificateDataRepository.findById(newCertificateDto.getIssuerCertificateId()).get().getSerialNumber();
-            issuerData = generateIssuerData(newCertificateDto);
-        }
-        RDN cn = subjectData.getX500name().getRDNs(BCStyle.CN)[0];
-        RDN org = subjectData.getX500name().getRDNs(BCStyle.O)[0];
-        RDN orgUnit = subjectData.getX500name().getRDNs(BCStyle.OU)[0];
-        RDN cCode = subjectData.getX500name().getRDNs(BCStyle.C)[0];
-
-        x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto);
-        keyStoreRepository.saveCertificate(keyPairIssuer.getPrivate(), x509certificate, newCertificateDto.getCertificateType());
         CertificateData certificateData = new CertificateData(subjectData.getSerialNumber(),
-                IETFUtils.valueToString(cn.getFirst().getValue()),
-                IETFUtils.valueToString(org.getFirst().getValue()),
-                IETFUtils.valueToString(orgUnit.getFirst().getValue()),
-                IETFUtils.valueToString(cCode.getFirst().getValue()),
+                getRDNValueFromSubjectData(subjectData, BCStyle.CN),
+                getRDNValueFromSubjectData(subjectData, BCStyle.O),
+                getRDNValueFromSubjectData(subjectData, BCStyle.OU),
+                getRDNValueFromSubjectData(subjectData, BCStyle.C),
                 issuerSerialNumber,
                 iso8601Formater.parse(newCertificateDto.getEndDate()),
                 CertificateStatus.VALID,
                 newCertificateDto.getCertificateType(),
                 getCertificatePurposeBasedOnType(newCertificateDto.getCertificateType()));
-        return certificateDataRepository.save(certificateData);
+
+        CertificateData savedCertificateData = certificateDataRepository.save(certificateData);
+
+        X509Certificate x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto);
+        Certificate[] certificateChain = getCertificateChain(savedCertificateData, x509certificate);
+
+        keyStoreRepository.saveCertificate(keyPairSubject.getPrivate(), x509certificate, newCertificateDto.getCertificateType(), certificateChain);
+
+        return savedCertificateData;
     }
 
     @Override
@@ -103,17 +110,39 @@ public class CertificateServiceImpl implements CerificateService {
         return certificateDtos;
     }
 
+    @Override
+    public void createCertificateFile(Long id) throws Exception {
+        Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
+        CertificateData certificateData = certificateDataRepository.findById(id).get();
+        if (isCertificateValid(certificateData)) {
+            throw new Exception();
+        }
+        byte[] bytes = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber()).getEncoded();
+
+        String certificate = BEGIN_CERT + LINE_SEPARATOR + new String(encoder.encode(bytes)) + LINE_SEPARATOR
+                + END_CERT;
+
+        writeBytesToFile(certificateData.getSerialNumber() + ".cer", certificate.getBytes());
+    }
+
+    private void writeBytesToFile(String fileOutput, byte[] bytes) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(fileOutput)) {
+            fos.write(bytes);
+        }
+    }
+
+    private boolean isCertificateValid(CertificateData certificate) {
+        return certificate.getCertificateStatus() != CertificateStatus.VALID;
+    }
+
     private CertificatePurposeType getCertificatePurposeBasedOnType(CertificateType certificateType) {
-        if(certificateType.equals(CertificateType.ROOT)) return CertificatePurposeType.SERVICE;
-        if(certificateType.equals(CertificateType.INTERMEDIATE)) return CertificatePurposeType.SUBSYSTEM;
+        if (certificateType.equals(CertificateType.ROOT)) return CertificatePurposeType.SERVICE;
+        if (certificateType.equals(CertificateType.INTERMEDIATE)) return CertificatePurposeType.SUBSYSTEM;
         return CertificatePurposeType.USER;
     }
 
-    private SubjectData generateSubjectData(NewCertificateDto newCertificateDto) {
+    private SubjectData generateSubjectData(NewCertificateDto newCertificateDto, PublicKey publicKey) {
         try {
-            KeyPair keyPairSubject = generateKeyPair();
-
-            SimpleDateFormat iso8601Formater = new SimpleDateFormat("yyyy-MM-dd");
             Date startDate = new Date();
             Date endDate = iso8601Formater.parse(newCertificateDto.getEndDate());
 
@@ -129,28 +158,37 @@ public class CertificateServiceImpl implements CerificateService {
             builder.addRDN(BCStyle.E, user.getUsername());
             builder.addRDN(BCStyle.UID, user.getId().toString());
 
-            return new SubjectData(keyPairSubject.getPublic(), builder.build(), sn, startDate, endDate);
+            return new SubjectData(publicKey, builder.build(), sn, startDate, endDate);
         } catch (ParseException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public static String generateSerialNumber() {
-        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
-        return uuid;
+    private Certificate[] getCertificateChain(CertificateData certificateData, Certificate currentCertificate) {
+        if (certificateData.getCertificateType() == CertificateType.ROOT)
+            return new Certificate[]{currentCertificate};
+
+        List<Certificate> certificates = new ArrayList<>();
+        certificates.add(currentCertificate);
+        CertificateData issuerCertificateData = certificateDataRepository.findBySerialNumber(certificateData.getIssuerSerialNumber());
+        Certificate issuerCertificate = keyStoreRepository.readCertificate(issuerCertificateData.getCertificateType(), issuerCertificateData.getSerialNumber());
+        certificates.add(issuerCertificate);
+        while (!issuerCertificateData.getSerialNumber().equals(issuerCertificateData.getIssuerSerialNumber())) {
+            issuerCertificateData = certificateDataRepository.findBySerialNumber(issuerCertificateData.getIssuerSerialNumber());
+            issuerCertificate = keyStoreRepository.readCertificate(issuerCertificateData.getCertificateType(), issuerCertificateData.getIssuerSerialNumber());
+            certificates.add(issuerCertificate);
+        }
+        return certificates.toArray(new Certificate[0]);
     }
 
 
-    private IssuerData generateIssuerData(NewCertificateDto newCertificateDto) throws CertificateEncodingException, UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
-        CertificateData certificateData = certificateDataRepository.findById(newCertificateDto.getIssuerCertificateId()).get();
-        Certificate issuerCertificate = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber());
-        X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) issuerCertificate).getSubject();
-        PrivateKey issuerKey = keyStoreRepository.getPrivateKeyForKeyStore(((X509Certificate) issuerCertificate).getSerialNumber().toString(16), certificateData.getCertificateType());
-        //Kreiraju se podaci za issuer-a, sto u ovom slucaju ukljucuje:
-        // - privatni kljuc koji ce se koristiti da potpise sertifikat koji se izdaje
-        // - podatke o vlasniku sertifikata koji izdaje nov sertifikat
-        return new IssuerData(issuerKey, issuerName);
+    public static String generateSerialNumber() {
+        String uuid;
+        do
+            uuid = UUID.randomUUID().toString().replaceAll("-", ""); //uuid starting with 0 creates problems with bigint parsing
+        while (uuid.startsWith("0"));
+        return uuid;
     }
 
 
@@ -166,6 +204,29 @@ public class CertificateServiceImpl implements CerificateService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private IssuerData getIssuerData(NewCertificateDto newCertificateDto, KeyPair keyPairSubject, SubjectData subjectData) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, CertificateEncodingException {
+
+        if (newCertificateDto.getCertificateType() == CertificateType.ROOT) {
+            return new IssuerData(keyPairSubject.getPrivate(), subjectData.getX500name());
+        }
+        CertificateData issuerCertificateData = certificateDataRepository.findById(newCertificateDto.getIssuerCertificateId()).get();
+        Certificate issuerCertificate = keyStoreRepository.readCertificate(issuerCertificateData.getCertificateType(), issuerCertificateData.getSerialNumber());
+        PrivateKey issuerKey = keyStoreRepository.getPrivateKeyForKeyStore(((X509Certificate) issuerCertificate).getSerialNumber().toString(16), issuerCertificateData.getCertificateType());
+        X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) issuerCertificate).getSubject();
+        return new IssuerData(issuerKey, issuerName);
+    }
+
+    private String getIssuerSerialNumber(SubjectData subjectData, NewCertificateDto certificateDto) {
+        if (certificateDto.getCertificateType() == CertificateType.ROOT)
+            return subjectData.getSerialNumber();
+        return certificateDataRepository.findById(certificateDto.getIssuerCertificateId()).get().getSerialNumber();
+    }
+
+    private String getRDNValueFromSubjectData(SubjectData subjectData, ASN1ObjectIdentifier asn1ObjectIdentifier) {
+        RDN rdn = subjectData.getX500name().getRDNs(asn1ObjectIdentifier)[0];
+        return IETFUtils.valueToString(rdn.getFirst().getValue());
     }
 
 

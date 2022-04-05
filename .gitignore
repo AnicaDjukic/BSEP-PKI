@@ -1,3 +1,6 @@
+*.jks
+*.cer
+
 # Compiled class file
 *.class
 

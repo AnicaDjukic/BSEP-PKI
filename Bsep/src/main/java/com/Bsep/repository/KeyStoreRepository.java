@@ -68,15 +68,15 @@ public class KeyStoreRepository {
         }
     }
 
-    public void saveCertificate(PrivateKey privateKey, X509Certificate certificate, CertificateType type) {
+    public void saveCertificate(PrivateKey privateKey, X509Certificate certificate, CertificateType type, Certificate[] certificates) {
         if (type == CertificateType.ROOT) {
-            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificate, keyStoreRoot);
+            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificates, keyStoreRoot);
             keyStoreWriter.saveKeyStore(KS_ROOT_PATH, PASSWORD.toCharArray(), keyStoreRoot);
         } else if (type == CertificateType.INTERMEDIATE) {
-            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificate, keyStoreIntermediate);
+            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificates, keyStoreIntermediate);
             keyStoreWriter.saveKeyStore(KS_INTERMEDIATE_PATH, PASSWORD.toCharArray(), keyStoreIntermediate);
         } else {
-            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificate, keyStoreEndEntity);
+            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificates, keyStoreEndEntity);
             keyStoreWriter.saveKeyStore(KS_END_ENTITY_PATH, PASSWORD.toCharArray(), keyStoreEndEntity);
         }
     }
@@ -94,10 +94,12 @@ public class KeyStoreRepository {
 
     public Certificate readCertificate(CertificateType certificateType, String alias) {
         String keyStoreFile = "";
-        if (certificateType.equals(CertificateType.ROOT)) {
+        if (certificateType == CertificateType.ROOT) {
             keyStoreFile = KS_ROOT_PATH;
-        } else {
+        } else if (certificateType == CertificateType.INTERMEDIATE) {
             keyStoreFile = KS_INTERMEDIATE_PATH;
+        } else {
+            keyStoreFile = KS_END_ENTITY_PATH;
         }
         return keyStoreReader.readCertificate(keyStoreFile, PASSWORD, alias);
     }
