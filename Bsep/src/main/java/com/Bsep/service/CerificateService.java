@@ -16,4 +16,6 @@ public interface CerificateService {
     Resource getCertificateResource(Long id);
 
     List<CertificateDto> getByUsername(String name);
+
+    void revoke(Long id);
 }

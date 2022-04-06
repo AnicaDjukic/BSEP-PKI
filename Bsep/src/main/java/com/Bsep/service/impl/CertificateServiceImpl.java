@@ -151,6 +151,18 @@ public class CertificateServiceImpl implements CerificateService {
         return certificateDtos;
     }
 
+    @Override
+    public void revoke(Long id) {
+        CertificateData certificateData = certificateDataRepository.findById(id).get();
+        certificateData.setCertificateStatus(CertificateStatus.REVOKED);
+        certificateDataRepository.save(certificateData);
+        for(CertificateData cert : certificateDataRepository.findByIssuerSerialNumber(certificateData.getSerialNumber())) {
+            if(cert.getCertificateType() == CertificateType.ROOT)
+                continue;
+            revoke(cert.getId());
+        }
+    }
+
     private boolean isCertificateValid(CertificateData certificate) {
         if(certificate.getCertificateStatus() == CertificateStatus.REVOKED)
             return false;

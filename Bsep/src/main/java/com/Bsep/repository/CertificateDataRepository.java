@@ -17,4 +17,6 @@ public interface CertificateDataRepository extends JpaRepository<CertificateData
     Set<CertificateData> findAll(@Param("isCa") Boolean isCa);
 
     List<CertificateData> findBySubjectUsername(String username);
+
+    List<CertificateData> findByIssuerSerialNumber(String issuerSerialNumber);
 }
