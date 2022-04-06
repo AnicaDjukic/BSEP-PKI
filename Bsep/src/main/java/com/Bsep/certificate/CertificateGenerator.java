@@ -4,19 +4,24 @@ import com.Bsep.dto.NewCertificateDto;
 import com.Bsep.model.CertificateType;
 import com.Bsep.model.IssuerData;
 import com.Bsep.model.SubjectData;
-
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -47,7 +52,18 @@ public class CertificateGenerator {
             //Generise se sertifikat
 
             addExtensions(newCertificateDto, certGen);
+
+            JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils();
+            AuthorityKeyIdentifier authorityKeyIdentifier = extensionUtils
+                    .createAuthorityKeyIdentifier(issuerData.getPublicKey());
+            certGen.addExtension(new ASN1ObjectIdentifier("2.5.29.35"), false, authorityKeyIdentifier);
+
+            SubjectKeyIdentifier subjectKeyIdentifier = extensionUtils
+                    .createSubjectKeyIdentifier(subjectData.getPublicKey());
+            certGen.addExtension(new ASN1ObjectIdentifier("2.5.29.14"), false, subjectKeyIdentifier);
+
             X509CertificateHolder certHolder = certGen.build(contentSigner);
+
 
             //Builder generise sertifikat kao objekat klase X509CertificateHolder
             //Nakon toga je potrebno certHolder konvertovati u sertifikat, za sta se koristi certConverter
@@ -66,19 +82,23 @@ public class CertificateGenerator {
             e.printStackTrace();
         } catch (CertificateException e) {
             e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (CertIOException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
     private void addExtensions(NewCertificateDto newCertificateDto, X509v3CertificateBuilder certGen) {
         if (newCertificateDto.getCertificateType() == CertificateType.END_ENTITY) {
-        	try {
-				certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
-			} catch (CertIOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }else{
+            try {
+                certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+            } catch (CertIOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        } else {
             try {
                 certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
             } catch (CertIOException e) {
@@ -86,23 +106,23 @@ public class CertificateGenerator {
                 e.printStackTrace();
             }
         }
-        int usage=0;
+        int usage = 0;
         for (String s : newCertificateDto.getKeyUsages()) {
-        	 int sInt = Integer.parseInt(s);
-        	 usage |= sInt;
+            int sInt = Integer.parseInt(s);
+            usage |= sInt;
         }
-      
-		try {
-            if(newCertificateDto.getCertificateType() != CertificateType.END_ENTITY){
+
+        try {
+            if (newCertificateDto.getCertificateType() != CertificateType.END_ENTITY) {
                 certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage | KeyUsage.keyCertSign));
-            }else{
+            } else {
                 certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage));
             }
 
-		} catch (CertIOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
-        
+        } catch (CertIOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 }
