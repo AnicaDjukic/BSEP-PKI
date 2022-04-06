@@ -12,6 +12,7 @@ public class CertificateDto {
     private String organizationalUnitName;
     private String countryCode;
     private String issuerCommonName;
+    private String startDate;
     private String endDate;
     private CertificateStatus status;
     private CertificateType certificateType;
@@ -19,7 +20,7 @@ public class CertificateDto {
     public CertificateDto() {
     }
 
-    public CertificateDto(Long id, String serialNumber, String username, String organization, String organizationalUnitName, String countryCode, String issuerCommonName, String endDate, CertificateStatus status, CertificateType certificateType) {
+    public CertificateDto(Long id, String serialNumber, String username, String organization, String organizationalUnitName, String countryCode, String issuerCommonName, String startDate, String endDate, CertificateStatus status, CertificateType certificateType) {
         this.id = id;
         this.serialNumber = serialNumber;
         this.username = username;
@@ -27,6 +28,7 @@ public class CertificateDto {
         this.organizationalUnitName = organizationalUnitName;
         this.countryCode = countryCode;
         this.issuerCommonName = issuerCommonName;
+        this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
         this.certificateType = certificateType;
@@ -69,4 +71,7 @@ public class CertificateDto {
     public CertificateType getCertificateType() {
         return certificateType;
     }
+
+    public String getStartDate() {return startDate;}
+
 }

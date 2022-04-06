@@ -94,6 +94,7 @@ public class CertificateServiceImpl implements CerificateService {
                 getRDNValueFromSubjectData(subjectData, BCStyle.OU),
                 getRDNValueFromSubjectData(subjectData, BCStyle.C),
                 issuerSerialNumber,
+                new Date(),
                 iso8601Formater.parse(newCertificateDto.getEndDate()),
                 CertificateStatus.VALID,
                 newCertificateDto.getCertificateType(),

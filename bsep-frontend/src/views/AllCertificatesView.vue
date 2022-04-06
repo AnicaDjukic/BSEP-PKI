@@ -2,7 +2,14 @@
   <table
     v-for="cert in certificates"
     :key="cert.serialNumber"
-    style="border: 1px solid gray; width: 50%; margin-left: 25%; margin-top: 5%; background: white;zoom:1.1;"
+    style="
+      border: 1px solid gray;
+      width: 50%;
+      margin-left: 25%;
+      margin-top: 5%;
+      background: white;
+      zoom: 1;
+    "
     class="table table-striped"
   >
     <thead style="border: 1px solid gray">
@@ -31,7 +38,7 @@
       </tr>
       <tr>
         <th>Start date:</th>
-        <td>12/12/2022</td>
+        <td>{{ cert.startDate }}</td>
         <th>Organization unit:</th>
 
         <td>{{ cert.organization }}</td>
@@ -43,7 +50,7 @@
 
         <td>{{ cert.organizationalUnitName }}</td>
       </tr>
-      <tr>
+      <tr v-bind:class = "(cert.status=='VALID')?'green':'red'">
         <th>Certificate status:</th>
         <td>{{ cert.status }}</td>
         <th>Issuer common name</th>
@@ -51,15 +58,32 @@
         <td>{{ cert.issuerCommonName }}</td>
       </tr>
       <tr>
-        <td></td>
+        <td>
+          <button
+            type="button"
+            class="btn btn-primary"
+            style="
+              background-color: rgb(3, 20, 50);
+              border-color: rgb(3, 20, 50);
+              width: 150%
+            "
+            v-if="cert.status != 'REVOKED'"
+            v-on:click="revokeCertificate(cert.id)"
+          >
+            Revoke certificate
+          </button>
+        </td>
         <td></td>
         <td>
           <button
             type="button"
             class="btn btn-primary"
-            style="background-color: rgb(3, 20, 50); border-color: rgb(3, 20, 50)"
-            v-on:click="showModal(cert.serialNumber)"
-            v-if="cert.certificateType != 'END_ENTITY'"
+            style="
+              background-color: rgb(3, 20, 50);
+              border-color: rgb(3, 20, 50);
+            "
+            v-on:click="showModal(cert.serialNumber, cert.endDate)"
+            v-if="cert.certificateType != 'END_ENTITY' && cert.status == 'VALID'"
           >
             Issue certificate
           </button>
@@ -68,7 +92,12 @@
           <button
             type="button"
             class="btn btn-primary"
-            style="background-color: rgb(3, 20, 50); border-color: rgb(3, 20, 50); width: 105%; margin-left: -10%"
+            style="
+              background-color: rgb(3, 20, 50);
+              border-color: rgb(3, 20, 50);
+              width: 110%;
+              margin-left: -10%;
+            "
             v-on:click="downloadCertificate(cert.id)"
           >
             Download certificate
@@ -81,6 +110,7 @@
     v-show="isModalVisible"
     @close="closeModal"
     v-bind:issuerCertificateSerialNumber="issuerCertificateSerialNumber"
+    v-bind:issuerExpirationDate="issuerExpirationDate"
   />
 </template>
 
@@ -94,24 +124,37 @@ export default {
     return {
       isModalVisible: false,
       certificates: [],
-      issuerCertificateSerialNumber: ''
+      issuerCertificateSerialNumber: '',
+      issuerExpirationDate: null
     }
   },
   mounted: function () {
     axios.defaults.headers.common.Authorization =
-                'Bearer ' + window.sessionStorage.getItem('jwt')
+      'Bearer ' + window.sessionStorage.getItem('jwt')
     axios.get('http://localhost:8080/api/v1/certificate').then((response) => {
       this.certificates = response.data
     })
   },
   methods: {
-    showModal (serialNumber) {
+    formatDate: function (date) {
+      const d = new Date(date)
+      let month = '' + (d.getMonth() + 1)
+      let day = '' + d.getDate()
+      const year = d.getFullYear()
+
+      if (month.length < 2) month = '0' + month
+      if (day.length < 2) day = '0' + day
+
+      return [year, month, day].join('-')
+    },
+    showModal (serialNumber, expirationDate) {
+      this.issuerExpirationDate = expirationDate
       this.issuerCertificateSerialNumber = serialNumber
       this.isModalVisible = true
     },
     downloadCertificate (id) {
       axios.defaults.headers.common.Authorization =
-                'Bearer ' + window.sessionStorage.getItem('jwt')
+        'Bearer ' + window.sessionStorage.getItem('jwt')
       axios
         .get('http://localhost:8080/api/v1/certificate/' + id + '/download')
         .then((response) => {
@@ -124,6 +167,19 @@ export default {
     },
     closeModal () {
       this.isModalVisible = false
+    },
+    revokeCertificate (certificateId) {
+      axios.defaults.headers.common.Authorization =
+        'Bearer ' + window.sessionStorage.getItem('jwt')
+      axios
+        .put(
+          'http://localhost:8080/api/v1/certificate/' +
+            certificateId +
+            '/revoke'
+        )
+        .then(() => {
+          window.location.reload()
+        })
     }
   }
 }
