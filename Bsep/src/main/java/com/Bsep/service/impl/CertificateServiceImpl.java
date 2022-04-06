@@ -115,6 +115,7 @@ public class CertificateServiceImpl implements CerificateService {
         List<CertificateDto> certificateDtos = new ArrayList<>();
         Set<CertificateData> certificates = certificateDataRepository.findAll(isCa);
         for (CertificateData certificate : certificates) {
+            isCertificateValid(certificate);
             CertificateData issuerCertificate = certificateDataRepository.findBySerialNumber(certificate.getIssuerSerialNumber());
             certificateDtos.add(certificateMapper.toDTO(certificate, issuerCertificate.getSubjectUsername()));
         }
@@ -143,6 +144,7 @@ public class CertificateServiceImpl implements CerificateService {
         List<CertificateDto> certificateDtos = new ArrayList<>();
         List<CertificateData> certificates = certificateDataRepository.findBySubjectUsername(username);
         for (CertificateData certificate : certificates) {
+            isCertificateValid(certificate);
             CertificateData issuerCertificate = certificateDataRepository.findBySerialNumber(certificate.getIssuerSerialNumber());
             certificateDtos.add(certificateMapper.toDTO(certificate, issuerCertificate.getSubjectUsername()));
         }
@@ -150,6 +152,8 @@ public class CertificateServiceImpl implements CerificateService {
     }
 
     private boolean isCertificateValid(CertificateData certificate) {
+        if(certificate.getCertificateStatus() == CertificateStatus.REVOKED)
+            return false;
         verifySignature(certificate);
         checkExpiration(certificate);
         return certificate.getCertificateStatus() == CertificateStatus.VALID;
@@ -158,14 +162,15 @@ public class CertificateServiceImpl implements CerificateService {
     private void verifySignature(CertificateData certificateData) {
         Certificate certificate = keyStoreRepository.readCertificate(certificateData.getCertificateType(),certificateData.getSerialNumber());
         Certificate[] certificateChain = getCertificateChain(certificateData, certificate);
-        if(certificateChain.length < 2)     // za ROOT sertifikate
-            return;
         try {
+            if(certificateChain.length < 2)
+                certificateChain[0].verify(certificateChain[0].getPublicKey());
+
             for(int i = 0; i < certificateChain.length - 1; i++){
                 certificateChain[i].verify(certificateChain[i+1].getPublicKey());
             }
         } catch (SignatureException | CertificateException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException e) {
-            certificateData.setCertificateStatus(CertificateStatus.REVOKED);    // dodati status INVALID
+            certificateData.setCertificateStatus(CertificateStatus.INVALID);
         }
     }
 
