@@ -116,7 +116,7 @@ public class CertificateServiceImpl implements CerificateService {
         Certificate[] certificateChain = getCertificateChain(savedCertificateData, x509certificate);
 
         keyStoreRepository.saveCertificate(keyPairSubject.getPrivate(), x509certificate, newCertificateDto.getCertificateType(), certificateChain);
-
+        
         createCertificateFile(savedCertificateData.getId());
         return savedCertificateData;
     }
@@ -209,36 +209,26 @@ public class CertificateServiceImpl implements CerificateService {
     private void createCertificateFile(Long id) throws Exception {
         Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
         CertificateData certificateData = certificateDataRepository.findById(id).get();
-        if (isCertificateValid(certificateData)) {
-            //throw new Exception();
+        if (!isCertificateValid(certificateData)) {
+            throw new Exception();
         }
-
         String certificates = "";
         Certificate firstCert = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber());
         Certificate[] certs = getCertificateChain(certificateData, firstCert);
-        for (Certificate cert : certs) {
+        for (int i = 0; i < certs.length - 1; i++) {
+            Certificate cert = certs[i];
             byte[] bytes = cert.getEncoded();
             String certificate = BEGIN_CERT + LINE_SEPARATOR + new String(encoder.encode(bytes)) + LINE_SEPARATOR
                     + END_CERT + LINE_SEPARATOR;
             certificates += certificate;
         }
-        byte[] bytes = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber()).getEncoded();
-
+        Certificate cert = certs[certs.length - 1];
+        byte[] bytes = cert.getEncoded();
         String certificate = BEGIN_CERT + LINE_SEPARATOR + new String(encoder.encode(bytes)) + LINE_SEPARATOR
                 + END_CERT;
-
-        writeBytesToFile("data" + File.separator + "certificates" + File.separator + certificateData.getSerialNumber() + ".cer", certificates.getBytes());
-        
-
-        /*
-        byte[] bytes = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber()).getEncoded();
-        String certificate = BEGIN_CERT + LINE_SEPARATOR + new String(encoder.encode(bytes)) + LINE_SEPARATOR
-                + END_CERT;
-        writeBytesToFile("data" + File.separator + "certificates" + File.separator + certificateData.getSerialNumber() + ".cer", certificate.getBytes());
-        
-         */
-
-
+        certificates += certificate;
+        writeBytesToFile("data" + File.separator + "certificates" + File.separator + certificateData.getSerialNumber() + ".cer",
+                certificates.getBytes());
     }
 
     private void writeBytesToFile(String fileOutput, byte[] bytes) throws IOException {
@@ -288,7 +278,7 @@ public class CertificateServiceImpl implements CerificateService {
         certificates.add(issuerCertificate);
         while (!issuerCertificateData.getSerialNumber().equals(issuerCertificateData.getIssuerSerialNumber())) {
             issuerCertificateData = certificateDataRepository.findBySerialNumber(issuerCertificateData.getIssuerSerialNumber());
-            issuerCertificate = keyStoreRepository.readCertificate(issuerCertificateData.getCertificateType(), issuerCertificateData.getIssuerSerialNumber());
+            issuerCertificate = keyStoreRepository.readCertificate(issuerCertificateData.getCertificateType(), issuerCertificateData.getSerialNumber());
             certificates.add(issuerCertificate);
         }
         return certificates.toArray(new Certificate[0]);
@@ -325,7 +315,7 @@ public class CertificateServiceImpl implements CerificateService {
         }
         CertificateData issuerCertificateData = certificateDataRepository.findBySerialNumber(newCertificateDto.getIssuerCertificateSerialNumber());
         Certificate issuerCertificate = keyStoreRepository.readCertificate(issuerCertificateData.getCertificateType(), issuerCertificateData.getSerialNumber());
-        PrivateKey issuerKey = keyStoreRepository.getPrivateKeyForKeyStore(((X509Certificate) issuerCertificate).getSerialNumber().toString(16), issuerCertificateData.getCertificateType());
+        PrivateKey issuerKey = keyStoreRepository.getPrivateKeyForKeyStore((issuerCertificateData.getSerialNumber()), issuerCertificateData.getCertificateType());
         X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) issuerCertificate).getSubject();
         return new IssuerData(issuerKey, issuerName, issuerCertificate.getPublicKey());
     }
