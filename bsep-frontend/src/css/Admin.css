@@ -12,7 +12,12 @@
     overflow: hidden;
     background-color: #0000007a;
   }
-  
+  .green{
+    background-color: lightgreen;
+  }
+  .red{
+    background-color: rgb(238, 102, 102);
+  }
   li {
     float: left;
   }

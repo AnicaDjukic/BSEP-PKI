@@ -17,6 +17,7 @@ public class CertificateMapper {
                 certificateData.getOrganizationalUnitName(),
                 certificateData.getCountryCode(),
                 issuerCommonName,
+                iso8601Formater.format(certificateData.getStartDate()),
                 iso8601Formater.format(certificateData.getEndDate()),
                 certificateData.getCertificateStatus(),
                 certificateData.getCertificateType());

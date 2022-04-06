@@ -68,6 +68,7 @@
               v-model="countryCode"
             />
             <Datepicker
+              :maxDate="issuerExpirationDate"
               v-model="date"
               style="width: 70%; margin-top: 1em; margin-left: 15%"
               class="fadeIn third"
@@ -111,7 +112,7 @@ import Datepicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 export default {
   name: 'IssueCertificateModal',
-  props: ['issuerCertificateSerialNumber'],
+  props: ['issuerCertificateSerialNumber', 'issuerExpirationDate'],
   components: { Datepicker },
   data: function () {
     return {

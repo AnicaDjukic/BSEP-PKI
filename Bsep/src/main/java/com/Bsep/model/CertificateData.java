@@ -37,6 +37,9 @@ public class CertificateData {
     @Column(name = "issuerSerialNumber", unique = false, nullable = false)
     private String issuerSerialNumber;
 
+    @Column(name = "startDate", nullable = false)
+    private Date startDate;
+
     @Column(name = "endDate", nullable = false)
     private Date endDate;
 
@@ -53,13 +56,14 @@ public class CertificateData {
     public CertificateData() {
     }
 
-    public CertificateData(String serialNumber, String subjectUsername, String organization, String organizationalUnitName, String countryCode, String issuerSerialNumber, Date endDate, CertificateStatus certificateStatus, CertificateType certificateType, CertificatePurposeType certificatePurposeType) {
+    public CertificateData(String serialNumber, String subjectUsername, String organization, String organizationalUnitName, String countryCode, String issuerSerialNumber, Date startDate, Date endDate, CertificateStatus certificateStatus, CertificateType certificateType, CertificatePurposeType certificatePurposeType) {
         this.serialNumber = serialNumber;
         this.subjectUsername = subjectUsername;
         this.organization = organization;
         this.organizationalUnitName = organizationalUnitName;
         this.countryCode = countryCode;
         this.issuerSerialNumber = issuerSerialNumber;
+        this.startDate = startDate;
         this.endDate = endDate;
         this.certificateStatus = certificateStatus;
         this.certificateType = certificateType;
@@ -123,9 +127,15 @@ public class CertificateData {
         return certificateStatus;
     }
 
-    public void setCertificateStatus(CertificateStatus certificateStatus) {
-        this.certificateStatus = certificateStatus;
-    }
+    public void setCertificateStatus(CertificateStatus certificateStatus) {this.certificateStatus = certificateStatus;}
+
+    public void setId(Long id) {this.id = id;}
+
+    public Date getStartDate() {return startDate;}
+
+    public void setStartDate(Date startDate) {this.startDate = startDate;}
+
+    public void setEndDate(Date endDate) {this.endDate = endDate;}
 
     public CertificateType getCertificateType() {
         return certificateType;
