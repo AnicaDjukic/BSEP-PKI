@@ -61,7 +61,7 @@ public class CertificateController {
         }
     }
 
-    @PutMapping(value = "/revoke/{id}")
+    @PutMapping(value = "/{id}/revoke")
     public ResponseEntity<HttpStatus> revoke(@PathVariable Long id) {
         certificateService.revoke(id);
         return ResponseEntity.ok().build();
