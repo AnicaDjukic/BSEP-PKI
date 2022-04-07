@@ -75,15 +75,15 @@ public class KeyStoreRepository {
         }
     }
 
-    public void saveCertificate(PrivateKey privateKey, X509Certificate certificate, CertificateType type, Certificate[] certificates) {
+    public void saveCertificate(PrivateKey privateKey, String serialNumber, CertificateType type, Certificate certificate) {
         if (type == CertificateType.ROOT) {
-            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificates, keyStoreRoot);
+            keyStoreWriter.write(serialNumber, privateKey, PASSWORD.toCharArray(), new Certificate[] {certificate}, keyStoreRoot);
             keyStoreWriter.saveKeyStore(KS_ROOT_PATH, PASSWORD.toCharArray(), keyStoreRoot);
         } else if (type == CertificateType.INTERMEDIATE) {
-            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificates, keyStoreIntermediate);
+            keyStoreWriter.write(serialNumber, privateKey, PASSWORD.toCharArray(), new Certificate[] {certificate}, keyStoreIntermediate);
             keyStoreWriter.saveKeyStore(KS_INTERMEDIATE_PATH, PASSWORD.toCharArray(), keyStoreIntermediate);
         } else {
-            keyStoreWriter.write(certificate.getSerialNumber().toString(16), privateKey, PASSWORD.toCharArray(), certificates, keyStoreEndEntity);
+            keyStoreWriter.write(serialNumber, privateKey, PASSWORD.toCharArray(), new Certificate[] {certificate}, keyStoreEndEntity);
             keyStoreWriter.saveKeyStore(KS_END_ENTITY_PATH, PASSWORD.toCharArray(), keyStoreEndEntity);
         }
     }
