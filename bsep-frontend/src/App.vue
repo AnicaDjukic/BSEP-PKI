@@ -34,7 +34,17 @@ export default {
       this.role = ''
     },
     updateLinks: function () {
-      this.role = window.sessionStorage.getItem('role')
+      // const { base64decode } = require('nodejs-base64')
+      const jwtToken = window.sessionStorage.getItem('jwt')
+      if (jwtToken) {
+        const tokenSplit = jwtToken.split('.')
+        // const decoded = base64decode(tokenSplit[1])
+        const decoded = decodeURIComponent(escape(window.atob(tokenSplit[1])))
+        const obj = JSON.parse(decoded)
+        console.log(obj.role)
+        this.role = obj.role
+      }
+
       if (this.role == null) this.role = ''
     }
   }

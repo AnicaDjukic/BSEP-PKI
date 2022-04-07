@@ -138,10 +138,21 @@ export default {
       isModalVisible: false,
       certificates: [],
       issuerCertificateSerialNumber: '',
-      issuerExpirationDate: null
+      issuerExpirationDate: null,
+      role: ''
     }
   },
   mounted: function () {
+    const jwtToken = window.sessionStorage.getItem('jwt')
+    if (jwtToken) {
+      const tokenSplit = jwtToken.split('.')
+      const decoded = decodeURIComponent(escape(window.atob(tokenSplit[1])))
+      const obj = JSON.parse(decoded)
+      console.log(obj.role)
+      this.role = obj.role
+    }
+
+    if (this.role == null) this.role = ''
     axios.defaults.headers.common.Authorization =
       'Bearer ' + window.sessionStorage.getItem('jwt')
     axios.get('http://localhost:8080/api/v1/certificate').then((response) => {
