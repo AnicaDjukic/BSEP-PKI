@@ -114,7 +114,7 @@ public class CertificateGenerator {
 
         try {
             if (newCertificateDto.getCertificateType() != CertificateType.END_ENTITY) {
-                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage | KeyUsage.keyCertSign | KeyUsage.digitalSignature));
+                certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage | KeyUsage.keyCertSign));
             } else {
                 certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage));
             }

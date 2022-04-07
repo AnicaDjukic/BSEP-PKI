@@ -110,6 +110,11 @@ public class CertificateServiceImpl implements CerificateService {
                 newCertificateDto.getCertificateType(),
                 getCertificatePurposeBasedOnType(newCertificateDto.getCertificateType()));
 
+        CertificateData issuerCertificateData = certificateDataRepository.findBySerialNumber(issuerSerialNumber);
+        if(certificateData.getEndDate().after(issuerCertificateData.getEndDate())|| certificateData.getEndDate().before(new Date())){
+            return null;
+        }
+
         CertificateData savedCertificateData = certificateDataRepository.save(certificateData);
 
         X509Certificate x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto);
@@ -174,6 +179,12 @@ public class CertificateServiceImpl implements CerificateService {
         }
     }
 
+    @Override
+    public boolean isRevoked(Long id) {
+        CertificateData certificateData = certificateDataRepository.findById(id).get();
+        return certificateData.getCertificateStatus() == CertificateStatus.REVOKED;
+    }
+
     private boolean isCertificateValid(CertificateData certificate) {
         if (certificate.getCertificateStatus() == CertificateStatus.REVOKED)
             return false;
@@ -212,7 +223,7 @@ public class CertificateServiceImpl implements CerificateService {
         if (!isCertificateValid(certificateData)) {
             throw new Exception();
         }
-        String certificates = "";
+        StringBuilder certificates = new StringBuilder();
         Certificate firstCert = keyStoreRepository.readCertificate(certificateData.getCertificateType(), certificateData.getSerialNumber());
         Certificate[] certs = getCertificateChain(certificateData, firstCert);
         for (int i = 0; i < certs.length - 1; i++) {
@@ -220,15 +231,15 @@ public class CertificateServiceImpl implements CerificateService {
             byte[] bytes = cert.getEncoded();
             String certificate = BEGIN_CERT + LINE_SEPARATOR + new String(encoder.encode(bytes)) + LINE_SEPARATOR
                     + END_CERT + LINE_SEPARATOR;
-            certificates += certificate;
+            certificates.append(certificate);
         }
         Certificate cert = certs[certs.length - 1];
         byte[] bytes = cert.getEncoded();
         String certificate = BEGIN_CERT + LINE_SEPARATOR + new String(encoder.encode(bytes)) + LINE_SEPARATOR
                 + END_CERT;
-        certificates += certificate;
+        certificates.append(certificate);
         writeBytesToFile("data" + File.separator + "certificates" + File.separator + certificateData.getSerialNumber() + ".cer",
-                certificates.getBytes());
+                certificates.toString().getBytes());
     }
 
     private void writeBytesToFile(String fileOutput, byte[] bytes) throws IOException {

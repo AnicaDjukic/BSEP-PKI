@@ -18,4 +18,6 @@ public interface CerificateService {
     List<CertificateDto> getByUsername(String name);
 
     void revoke(Long id);
+
+    boolean isRevoked(Long id);
 }

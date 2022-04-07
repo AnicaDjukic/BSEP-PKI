@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +27,16 @@ public class CertificateController {
     }
 
     @PostMapping(value = "/create")
-    //@PreAuthorize("hasRole('ROLE_ADMIN')")	
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws Exception {
         CertificateData newCertificate = certificateService.createCertificate(newCertificateDto);
+        if(newCertificate != null)
+            return ResponseEntity.badRequest().build();
         return ResponseEntity.ok(newCertificate);
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<List<CertificateDto>> getAllCertificates(@RequestParam(required = false) Boolean isCa, Authentication authentication) {
         List<GrantedAuthority> roles= (List<GrantedAuthority>) authentication.getAuthorities();
         List<CertificateDto> certificates;
@@ -44,6 +48,7 @@ public class CertificateController {
     }
 
     @GetMapping(value = "/{id}/download")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<Resource> download(@PathVariable Long id) {
         try {
             Resource resource = certificateService.getCertificateResource(id);
@@ -61,8 +66,16 @@ public class CertificateController {
     }
 
     @PutMapping(value = "/{id}/revoke")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<HttpStatus> revoke(@PathVariable Long id) {
         certificateService.revoke(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/{id}/status")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    public ResponseEntity<Boolean> isRevoked(@PathVariable Long id) {
+        boolean isRevoked = certificateService.isRevoked(id);
+        return ResponseEntity.ok(isRevoked);
     }
 }
