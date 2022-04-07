@@ -65,7 +65,21 @@
             style="
               background-color: rgb(3, 20, 50);
               border-color: rgb(3, 20, 50);
-              width: 150%
+              width: 100%
+            "
+            v-on:click="isRevoked(cert.id)"
+          >
+            Is revoked
+          </button>
+        </td>
+        <td>
+          <button
+            type="button"
+            class="btn btn-primary"
+            style="
+              background-color: rgb(3, 20, 50);
+              border-color: rgb(3, 20, 50);
+              width: 70%
             "
             v-if="cert.status != 'REVOKED'"
             v-on:click="revokeCertificate(cert.id)"
@@ -73,7 +87,6 @@
             Revoke certificate
           </button>
         </td>
-        <td></td>
         <td>
           <button
             type="button"
@@ -179,6 +192,23 @@ export default {
         )
         .then(() => {
           window.location.reload()
+        })
+    },
+    isRevoked (certificateId) {
+      axios.defaults.headers.common.Authorization =
+        'Bearer ' + window.sessionStorage.getItem('jwt')
+      axios
+        .get(
+          'http://localhost:8080/api/v1/certificate/' +
+            certificateId +
+            '/status'
+        )
+        .then((response) => {
+          if (response.data) {
+            alert('Certificate is revoked')
+          } else {
+            alert('Certifivate is not revoked')
+          }
         })
     }
   }

@@ -30,7 +30,7 @@ public class CertificateController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws Exception {
         CertificateData newCertificate = certificateService.createCertificate(newCertificateDto);
-        if(newCertificate != null)
+        if(newCertificate == null)
             return ResponseEntity.badRequest().build();
         return ResponseEntity.ok(newCertificate);
     }

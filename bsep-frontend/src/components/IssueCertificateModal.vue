@@ -84,17 +84,22 @@
               multiple
             >
               <option selected hidden>Certificate type</option>
-              <option value="128">digitalSignature</option>
-              <option value="64">nonRepudiation</option>
-              <option value="32">keyEncipherment</option>
-              <option value="16">dataEncipherment</option>
-              <option value="8">keyAgreement</option>
-              <option value="2">cRLSign</option>
-              <option value="1">encipherOnly</option>
-              <option value="32768">decipherOnly</option>
+              <option value="128">Digital signature</option>
+              <option value="64">Non repudiation</option>
+              <option value="32">Key encipherment</option>
+              <option value="16">Data encipherment</option>
+              <option value="8">Key agreement</option>
+              <option value="2">cRL sign</option>
+              <option value="1">Encipher only</option>
+              <option value="32768">Decipher only</option>
             </select>
             <input
-              style="margin-top: 1em; margin-left: 34%; background-color: rgb(3, 20, 50); border-color: rgb(3, 20, 50)"
+              style="
+                margin-top: 1em;
+                margin-left: 34%;
+                background-color: rgb(3, 20, 50);
+                border-color: rgb(3, 20, 50);
+              "
               type="button"
               class="btn btn-primary"
               value="Create certificate"
@@ -129,6 +134,8 @@ export default {
     }
   },
   mounted: function () {
+    axios.defaults.headers.common.Authorization =
+      'Bearer ' + window.sessionStorage.getItem('jwt')
     axios
       .get('http://localhost:8080/api/v1/users/getAllUsers')
       .then((response) => {

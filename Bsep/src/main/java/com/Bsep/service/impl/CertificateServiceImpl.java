@@ -110,8 +110,13 @@ public class CertificateServiceImpl implements CerificateService {
                 newCertificateDto.getCertificateType(),
                 getCertificatePurposeBasedOnType(newCertificateDto.getCertificateType()));
 
-        CertificateData issuerCertificateData = certificateDataRepository.findBySerialNumber(issuerSerialNumber);
-        if(certificateData.getEndDate().after(issuerCertificateData.getEndDate())|| certificateData.getEndDate().before(new Date())){
+        if(newCertificateDto.getCertificateType() != CertificateType.ROOT) {
+            CertificateData issuerCertificateData = certificateDataRepository.findBySerialNumber(issuerSerialNumber);
+            if (certificateData.getEndDate().after(issuerCertificateData.getEndDate())) {
+                return null;
+            }
+        }
+        if(certificateData.getEndDate().before(new Date())){
             return null;
         }
 

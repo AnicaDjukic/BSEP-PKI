@@ -1,5 +1,5 @@
 <template>
-<link
+  <link
     href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     rel="stylesheet"
     id="bootstrap-css"
@@ -11,7 +11,8 @@
         <select
           class="browser-default custom-select"
           style="width: 20em"
-          v-model="certificateType" disabled
+          v-model="certificateType"
+          disabled
         >
           <option selected hidden value="ROOT">ROOT</option>
         </select>
@@ -20,8 +21,7 @@
           style="width: 20em; margin-top: 1em"
           v-model="issuer"
           v-if="
-            certificateType == 'INTERMEDIATE' ||
-            certificateType == 'END_ENTITY'
+            certificateType == 'INTERMEDIATE' || certificateType == 'END_ENTITY'
           "
         >
           <option selected hidden>Issuer</option>
@@ -81,9 +81,7 @@
           class="fadeIn third"
           id="datePicker"
         ></Datepicker>
-        <div style="text-align:left;margin-left:4.3em">
-        Key usages:
-        </div>
+        <div style="text-align: left; margin-left: 4.3em">Key usages:</div>
         <select
           class="browser-default custom-select"
           style="width: 20em"
@@ -91,20 +89,20 @@
           multiple
         >
           <option selected hidden>Certificate type</option>
-          <option value="128">digitalSignature</option>
-          <option value="64">nonRepudiation</option>
-          <option value="32">keyEncipherment</option>
-          <option value="16">dataEncipherment</option>
-          <option value="8">keyAgreement</option>
-          <option value="2">cRLSign</option>
-          <option value="1">encipherOnly</option>
-          <option value="32768">decipherOnly</option>
+          <option value="128">Digital signature</option>
+          <option value="64">Non repudiation</option>
+          <option value="32">Key encipherment</option>
+          <option value="16">Data encipherment</option>
+          <option value="8">Key agreement</option>
+          <option value="2">cRL sign</option>
+          <option value="1">Encipher only</option>
+          <option value="32768">Decipher only</option>
         </select>
         <input
           type="button"
           class="fadeIn fourth"
           value="Create certificate"
-           style="background-color: rgb(3, 20, 50); margin-top: 1em"
+          style="background-color: rgb(3, 20, 50); margin-top: 1em"
           v-on:click="createCertificate()"
         />
       </form>
@@ -136,7 +134,7 @@ export default {
   },
   mounted: function () {
     axios.defaults.headers.common.Authorization =
-                'Bearer ' + window.sessionStorage.getItem('jwt')
+      'Bearer ' + window.sessionStorage.getItem('jwt')
     axios
       .get('http://localhost:8080/api/v1/users/getAllUsers')
       .then((response) => {
@@ -168,7 +166,7 @@ export default {
         keyUsages: this.keyUsages
       }
       axios.defaults.headers.common.Authorization =
-                'Bearer ' + window.sessionStorage.getItem('jwt')
+        'Bearer ' + window.sessionStorage.getItem('jwt')
       axios
         .post('http://localhost:8080/api/v1/certificate/create', newCertificate)
         .then((response) => {
