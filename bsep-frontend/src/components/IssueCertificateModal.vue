@@ -69,17 +69,18 @@
             />
             <Datepicker
               :maxDate="issuerExpirationDate"
+              :minDate = "(new Date()).setDate((new Date()).getDate()+1)"
               v-model="date"
               style="width: 70%; margin-top: 1em; margin-left: 15%"
               class="fadeIn third"
               id="datePicker"
             ></Datepicker>
-            <div style="text-align: left; margin-left: 15%; margin-top: 3%">
+            <div style="text-align: left; margin-left: 15.5%; margin-top: 3%">
               Key usages:
             </div>
             <select
               class="form-select"
-              style="width: 70%; margin-top: 1em; margin-left: 15%"
+              style="width: 70%; margin-top: 0.5em; margin-left: 15%"
               v-model="keyUsages"
               multiple
             >
@@ -93,6 +94,23 @@
               <option value="1">Encipher only</option>
               <option value="32768">Decipher only</option>
             </select>
+            <div style="text-align: left; margin-left: 15.5%; margin-top: 1em">Extended key usages:</div>
+        <select
+          class="form-select"
+          style="width: 23.5em;margin-left:15%;margin-top:0.5em"
+          v-model="extendedKeyUsages"
+          multiple
+        >
+          <option selected hidden>Certificate type</option>
+          <option value="1">TLS Web server authentication</option>
+          <option value="2">TLS Web client authentication</option>
+          <option value="3">Sign (downloadable) executable code</option>
+          <option value="4">Email protection</option>
+          <option value="5">IPSEC End System (host or router)</option>
+          <option value="6">IPSEC Tunnel</option>
+          <option value="7">IPSEC User</option>
+          <option value="8">Timestamping</option>
+        </select>
             <input
               style="
                 margin-top: 1em;
@@ -130,7 +148,8 @@ export default {
       countryCode: '',
       allSubjects: [],
       date: null,
-      keyUsages: []
+      keyUsages: [],
+      extendedKeyUsages: []
     }
   },
   mounted: function () {
@@ -167,7 +186,8 @@ export default {
         issuerCertificateSerialNumber: this.issuerCertificateSerialNumber,
         endDate: this.formatDate(this.date),
         certificateType: this.certificateType,
-        keyUsages: this.keyUsages
+        keyUsages: this.keyUsages,
+        extendedKeyUsages: this.extendedKeyUsages
       }
       axios
         .post('http://localhost:8080/api/v1/certificate/create', newCertificate)

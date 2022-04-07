@@ -81,7 +81,7 @@
               border-color: rgb(3, 20, 50);
               width: 70%
             "
-            v-if="cert.status != 'REVOKED'"
+            v-if="cert.status != 'REVOKED' && role === 'ROLE_ADMIN'"
             v-on:click="revokeCertificate(cert.id)"
           >
             Revoke certificate
@@ -96,7 +96,7 @@
               border-color: rgb(3, 20, 50);
             "
             v-on:click="showModal(cert.serialNumber, cert.endDate)"
-            v-if="cert.certificateType != 'END_ENTITY' && cert.status == 'VALID'"
+            v-if="cert.certificateType != 'END_ENTITY' && cert.status == 'VALID' && role === 'ROLE_ADMIN'"
           >
             Issue certificate
           </button>

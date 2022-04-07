@@ -16,13 +16,14 @@ public class NewCertificateDto {
     private String endDate;
     private CertificateType certificateType;
     private List<String> keyUsages;
+    private List<String> extendedKeyUsages;
 
     public NewCertificateDto() {
     }
 
-    public NewCertificateDto(Long subjectUID, String organization, String organizationalUnitName,
+	public NewCertificateDto(Long subjectUID, String organization, String organizationalUnitName,
 			String organizationEmail, String countryCode, String issuerCertificateSerialNumber, String endDate,
-			CertificateType certificateType, List<String> keyUsages) {
+			CertificateType certificateType, List<String> keyUsages, List<String> extendedKeyUsages) {
 		super();
 		this.subjectUID = subjectUID;
 		this.organization = organization;
@@ -33,7 +34,10 @@ public class NewCertificateDto {
 		this.endDate = endDate;
 		this.certificateType = certificateType;
 		this.keyUsages = keyUsages;
+		this.extendedKeyUsages = extendedKeyUsages;
 	}
+
+
 
 
 
@@ -73,4 +77,8 @@ public class NewCertificateDto {
 		return keyUsages;
 	}
 
+	public List<String> getExtendedKeyUsages() {
+		return extendedKeyUsages;
+	}
+		
 }

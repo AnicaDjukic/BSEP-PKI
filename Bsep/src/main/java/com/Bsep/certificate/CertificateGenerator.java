@@ -7,7 +7,9 @@ import com.Bsep.model.SubjectData;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.CertIOException;
@@ -118,6 +120,13 @@ public class CertificateGenerator {
             } else {
                 certGen.addExtension(Extension.keyUsage, true, new KeyUsage(usage));
             }
+            
+            ASN1ObjectIdentifier id_kp = new ASN1ObjectIdentifier("1.3.6.1.5.5.7.3");
+            KeyPurposeId[] purposes = new KeyPurposeId[newCertificateDto.getExtendedKeyUsages().size()];
+            for(int i=0;i<purposes.length;i++) {
+            	purposes[i] = KeyPurposeId.getInstance(id_kp.branch(newCertificateDto.getExtendedKeyUsages().get(i)));
+            }
+            certGen.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(purposes));
 
         } catch (CertIOException e) {
             // TODO Auto-generated catch block

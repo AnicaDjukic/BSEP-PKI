@@ -77,11 +77,12 @@
         />
         <Datepicker
           v-model="date"
+          :minDate = "(new Date()).setDate((new Date()).getDate()+1)"
           style="width: 20em; margin-top: 1em"
           class="fadeIn third"
           id="datePicker"
         ></Datepicker>
-        <div style="text-align: left; margin-left: 4.3em">Key usages:</div>
+        <div style="text-align: left; margin-left: 4.3em;margin-top:1em">Key usages:</div>
         <select
           class="browser-default custom-select"
           style="width: 20em"
@@ -97,6 +98,23 @@
           <option value="2">cRL sign</option>
           <option value="1">Encipher only</option>
           <option value="32768">Decipher only</option>
+        </select>
+        <div style="text-align: left; margin-left: 4.3em;margin-top:1em">Extended key usages:</div>
+        <select
+          class="browser-default custom-select"
+          style="width: 20em"
+          v-model="extendedKeyUsages"
+          multiple
+        >
+          <option selected hidden>Certificate type</option>
+          <option value="1">TLS Web server authentication</option>
+          <option value="2">TLS Web client authentication</option>
+          <option value="3">Sign (downloadable) executable code</option>
+          <option value="4">Email protection</option>
+          <option value="5">IPSEC End System (host or router)</option>
+          <option value="6">IPSEC Tunnel</option>
+          <option value="7">IPSEC User</option>
+          <option value="8">Timestamping</option>
         </select>
         <input
           type="button"
@@ -129,7 +147,8 @@ export default {
       countryCode: '',
       allSubjects: [],
       date: null,
-      keyUsages: []
+      keyUsages: [],
+      extendedKeyUsages: []
     }
   },
   mounted: function () {
@@ -163,7 +182,8 @@ export default {
         issuerCertificateId: this.issuer,
         endDate: this.formatDate(this.date),
         certificateType: this.certificateType,
-        keyUsages: this.keyUsages
+        keyUsages: this.keyUsages,
+        extendedKeyUsages: this.extendedKeyUsages
       }
       axios.defaults.headers.common.Authorization =
         'Bearer ' + window.sessionStorage.getItem('jwt')
