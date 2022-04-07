@@ -54,10 +54,13 @@ public class CertificateGenerator {
             addExtensions(newCertificateDto, certGen);
 
             JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils();
+            if(newCertificateDto.getCertificateType() != CertificateType.ROOT) {
             AuthorityKeyIdentifier authorityKeyIdentifier = extensionUtils
                     .createAuthorityKeyIdentifier(issuerData.getPublicKey());
             certGen.addExtension(new ASN1ObjectIdentifier("2.5.29.35"), false, authorityKeyIdentifier);
-
+            }
+            
+            
             SubjectKeyIdentifier subjectKeyIdentifier = extensionUtils
                     .createSubjectKeyIdentifier(subjectData.getPublicKey());
             certGen.addExtension(new ASN1ObjectIdentifier("2.5.29.14"), false, subjectKeyIdentifier);

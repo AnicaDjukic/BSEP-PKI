@@ -311,7 +311,7 @@ public class CertificateServiceImpl implements CerificateService {
     private IssuerData getIssuerData(NewCertificateDto newCertificateDto, KeyPair keyPairSubject, SubjectData subjectData) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, CertificateEncodingException {
 
         if (newCertificateDto.getCertificateType() == CertificateType.ROOT) {
-            return new IssuerData(keyPairSubject.getPrivate(), subjectData.getX500name(), keyPairSubject.getPublic());
+            return new IssuerData(keyPairSubject.getPrivate(), setBuilder(newCertificateDto).build(), keyPairSubject.getPublic());
         }
         CertificateData issuerCertificateData = certificateDataRepository.findBySerialNumber(newCertificateDto.getIssuerCertificateSerialNumber());
         Certificate issuerCertificate = keyStoreRepository.readCertificate(issuerCertificateData.getCertificateType(), issuerCertificateData.getSerialNumber());
@@ -324,6 +324,20 @@ public class CertificateServiceImpl implements CerificateService {
         RDN rdn = subjectData.getX500name().getRDNs(asn1ObjectIdentifier)[0];
         return IETFUtils.valueToString(rdn.getFirst().getValue());
     }
+    
+    private X500NameBuilder setBuilder(NewCertificateDto certificateInfoDTO) {
+		User user = userService.findById(certificateInfoDTO.getSubjectUID());
+		X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
+		 builder.addRDN(BCStyle.CN, user.getUsername());
+         builder.addRDN(BCStyle.SURNAME, user.getFirstName());
+         builder.addRDN(BCStyle.GIVENNAME, user.getLastName());
+         builder.addRDN(BCStyle.O, certificateInfoDTO.getOrganization());
+         builder.addRDN(BCStyle.OU, certificateInfoDTO.getOrganizationalUnitName());
+         builder.addRDN(BCStyle.C, certificateInfoDTO.getCountryCode());
+         builder.addRDN(BCStyle.E, user.getUsername());
+         builder.addRDN(BCStyle.UID,  UUID.randomUUID().toString());
+		return builder;
+	}
 
 
 }
