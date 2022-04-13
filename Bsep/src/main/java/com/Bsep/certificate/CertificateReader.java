@@ -43,11 +43,7 @@ public class CertificateReader {
 			    Certificate cert = cf.generateCertificate(bis);
 			    System.out.println(cert.toString());
 			 }
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (CertificateException | IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -63,9 +59,7 @@ public class CertificateReader {
 			    Certificate cert = (Certificate)i.next();
 			    System.out.println(cert);
 			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (CertificateException e) {
+		} catch (FileNotFoundException | CertificateException e) {
 			e.printStackTrace();
 		}
 

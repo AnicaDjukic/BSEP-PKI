@@ -172,26 +172,26 @@ public class CertificateServiceImpl implements CerificateService {
     }
 
     @Override
-    public void revoke(Long id) {
-        CertificateData certificateData = certificateDataRepository.findById(id).get();
+    public void revoke(String serialNumber) {
+        CertificateData certificateData = certificateDataRepository.findBySerialNumber(serialNumber);
         certificateData.setCertificateStatus(CertificateStatus.REVOKED);
         certificateDataRepository.save(certificateData);
         for (CertificateData cert : certificateDataRepository.findByIssuerSerialNumber(certificateData.getSerialNumber())) {
             if (cert.getCertificateType() == CertificateType.ROOT)
                 continue;
-            revoke(cert.getId());
+            revoke(cert.getSerialNumber());
         }
     }
 
     @Override
-    public boolean isRevoked(Long id) {
-        CertificateData certificateData = certificateDataRepository.findById(id).get();
+    public boolean isRevoked(String serialNumber) {
+        CertificateData certificateData = certificateDataRepository.findBySerialNumber(serialNumber);
         return certificateData.getCertificateStatus() == CertificateStatus.REVOKED;
     }
 
     @Override
-    public boolean checkIsValid(Long id) {
-        CertificateData certificateData = certificateDataRepository.findById(id).get();
+    public boolean checkIsValid(String serialNumber) {
+        CertificateData certificateData = certificateDataRepository.findBySerialNumber(serialNumber);
         return isCertificateValid(certificateData);
     }
 

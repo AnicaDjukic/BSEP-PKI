@@ -67,7 +67,7 @@
               border-color: rgb(3, 20, 50);
               width: 100%
             "
-            v-on:click="isRevoked(cert.id)"
+            v-on:click="isRevoked(cert.serialNumber)"
           >
             Is revoked
           </button>
@@ -82,7 +82,7 @@
               width: 70%
             "
             v-if="cert.status != 'REVOKED' && role === 'ROLE_ADMIN'"
-            v-on:click="revokeCertificate(cert.id)"
+            v-on:click="revokeCertificate(cert.serialNumber)"
           >
             Revoke certificate
           </button>
@@ -192,26 +192,26 @@ export default {
     closeModal () {
       this.isModalVisible = false
     },
-    revokeCertificate (certificateId) {
+    revokeCertificate (serialNumber) {
       axios.defaults.headers.common.Authorization =
         'Bearer ' + window.sessionStorage.getItem('jwt')
       axios
         .put(
           'http://localhost:8080/api/v1/certificate/' +
-            certificateId +
+            serialNumber +
             '/revoke'
         )
         .then(() => {
           window.location.reload()
         })
     },
-    isRevoked (certificateId) {
+    isRevoked (serialNumber) {
       axios.defaults.headers.common.Authorization =
         'Bearer ' + window.sessionStorage.getItem('jwt')
       axios
         .get(
           'http://localhost:8080/api/v1/certificate/' +
-            certificateId +
+            serialNumber +
             '/status'
         )
         .then((response) => {

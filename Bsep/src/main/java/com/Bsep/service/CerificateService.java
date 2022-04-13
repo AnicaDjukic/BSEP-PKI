@@ -17,9 +17,9 @@ public interface CerificateService {
 
     List<CertificateDto> getByUsername(String name);
 
-    void revoke(Long id);
+    void revoke(String serialNumber);
 
-    boolean isRevoked(Long id);
+    boolean isRevoked(String serialNumber);
 
-    boolean checkIsValid(Long id);
+    boolean checkIsValid(String serialNumber);
 }

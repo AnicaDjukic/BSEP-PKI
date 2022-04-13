@@ -65,24 +65,24 @@ public class CertificateController {
         }
     }
 
-    @PutMapping(value = "/{id}/revoke")
+    @PutMapping(value = "/{serial}/revoke")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<HttpStatus> revoke(@PathVariable Long id) {
-        certificateService.revoke(id);
+    public ResponseEntity<HttpStatus> revoke(@PathVariable String serial) {
+        certificateService.revoke(serial);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/{id}/status")
+    @GetMapping(value = "/{serial}/status")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
-    public ResponseEntity<Boolean> isRevoked(@PathVariable Long id) {
-        boolean isRevoked = certificateService.isRevoked(id);
+    public ResponseEntity<Boolean> isRevoked(@PathVariable String serial) {
+        boolean isRevoked = certificateService.isRevoked(serial);
         return ResponseEntity.ok(isRevoked);
     }
 
-    @GetMapping(value = "/{id}/valid")
+    @GetMapping(value = "/{serial}/valid")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
-    public ResponseEntity<Boolean> isValid(@PathVariable Long id) {
-        boolean isValid = certificateService.checkIsValid(id);
+    public ResponseEntity<Boolean> isValid(@PathVariable String serial) {
+        boolean isValid = certificateService.checkIsValid(serial);
         return ResponseEntity.ok(isValid);
     }
 }
