@@ -20,4 +20,6 @@ public interface CerificateService {
     void revoke(Long id);
 
     boolean isRevoked(Long id);
+
+    boolean checkIsValid(Long id);
 }

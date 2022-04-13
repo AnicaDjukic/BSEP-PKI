@@ -78,4 +78,11 @@ public class CertificateController {
         boolean isRevoked = certificateService.isRevoked(id);
         return ResponseEntity.ok(isRevoked);
     }
+
+    @GetMapping(value = "/{id}/valid")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    public ResponseEntity<Boolean> isValid(@PathVariable Long id) {
+        boolean isValid = certificateService.checkIsValid(id);
+        return ResponseEntity.ok(isValid);
+    }
 }

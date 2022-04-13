@@ -189,6 +189,12 @@ public class CertificateServiceImpl implements CerificateService {
         return certificateData.getCertificateStatus() == CertificateStatus.REVOKED;
     }
 
+    @Override
+    public boolean checkIsValid(Long id) {
+        CertificateData certificateData = certificateDataRepository.findById(id).get();
+        return isCertificateValid(certificateData);
+    }
+
     private boolean isCertificateValid(CertificateData certificate) {
         if (certificate.getCertificateStatus() == CertificateStatus.REVOKED)
             return false;
