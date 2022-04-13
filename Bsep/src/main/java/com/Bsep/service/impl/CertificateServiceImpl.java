@@ -123,9 +123,8 @@ public class CertificateServiceImpl implements CerificateService {
         CertificateData savedCertificateData = certificateDataRepository.save(certificateData);
 
         X509Certificate x509certificate = new CertificateGenerator().generateCertificate(subjectData, issuerData, newCertificateDto);
-        Certificate[] certificateChain = getCertificateChain(savedCertificateData, x509certificate);
 
-        keyStoreRepository.saveCertificate(keyPairSubject.getPrivate(), x509certificate, newCertificateDto.getCertificateType(), certificateChain);
+        keyStoreRepository.saveCertificate(keyPairSubject.getPrivate(), x509certificate.getSerialNumber().toString(16), newCertificateDto.getCertificateType(), x509certificate);
         
         createCertificateFile(savedCertificateData.getId());
         return savedCertificateData;
