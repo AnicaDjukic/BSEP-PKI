@@ -96,7 +96,7 @@
               border-color: rgb(3, 20, 50);
             "
             v-on:click="showModal(cert.serialNumber, cert.endDate)"
-            v-if="cert.certificateType != 'END_ENTITY' && cert.status == 'VALID' && role === 'ROLE_ADMIN'"
+            v-if="cert.certificateType != 'END_ENTITY' && cert.status == 'VALID'"
           >
             Issue certificate
           </button>

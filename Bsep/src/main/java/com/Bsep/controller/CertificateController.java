@@ -27,7 +27,7 @@ public class CertificateController {
     }
 
     @PostMapping(value = "/create")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<CertificateData> createCertificate(@RequestBody NewCertificateDto newCertificateDto) throws Exception {
         CertificateData newCertificate = certificateService.createCertificate(newCertificateDto);
         if(newCertificate == null)

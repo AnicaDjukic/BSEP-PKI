@@ -17,7 +17,7 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/getAllUsers")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<?> getAllUsers() {
         return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
